@@ -11,18 +11,17 @@ import time
 from typing import TYPE_CHECKING, Any, Optional, Union, overload
 
 import discord
+from args import (
+	Emoji,
+	FormatDateTime,
+	Guild,
+	Member,
+	PartialEmoji,
+	Role,
+	User,
+)
 from discord.ext import commands, localization
 from helpers import emojis
-
-from .custom_args import (
-	CustomEmoji,
-	CustomGuild,
-	CustomMember,
-	CustomPartialEmoji,
-	CustomRole,
-	CustomUser,
-	FormatDateTime,
-)
 
 if TYPE_CHECKING:
 	from core.bot import MyClient
@@ -173,15 +172,15 @@ class CustomResponse:
 
 		# these are variables that are always inserted into commands IF there is a context
 		context_formatting = {
-			"author": CustomMember.from_member(original.author)
+			"author": Member.from_member(original.author)
 			if isinstance(original, commands.Context)
-			else CustomMember.from_member(original.user)
+			else Member.from_member(original.user)
 			if isinstance(original, discord.Interaction)
 			else None,
 			"guild": (
-				CustomGuild.from_guild(original.guild)
+				Guild.from_guild(original.guild)
 				if isinstance(original, (discord.Interaction, commands.Context)) and hasattr(original, "guild")
-				else CustomGuild.from_guild(original)
+				else Guild.from_guild(original)
 				if isinstance(original, discord.Guild)
 				else None
 			),
@@ -192,17 +191,17 @@ class CustomResponse:
 		for key, value in kwargs.items():
 			match value:
 				case discord.Guild():
-					kwargs[key] = CustomGuild.from_guild(value)
+					kwargs[key] = Guild.from_guild(value)
 				case discord.Member():
-					kwargs[key] = CustomMember.from_member(value)
+					kwargs[key] = Member.from_member(value)
 				case discord.User():
-					kwargs[key] = CustomUser.from_user(value)
+					kwargs[key] = User.from_user(value)
 				case discord.Role():
-					kwargs[key] = CustomRole.from_role(value)
+					kwargs[key] = Role.from_role(value)
 				case discord.Emoji():
-					kwargs[key] = CustomEmoji.from_emoji(value)
+					kwargs[key] = Emoji.from_emoji(value)
 				case discord.PartialEmoji():
-					kwargs[key] = CustomPartialEmoji.from_emoji(value)
+					kwargs[key] = PartialEmoji.from_emoji(value)
 				case datetime.datetime():
 					kwargs[key] = FormatDateTime(value, "F")
 				case _:
