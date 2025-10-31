@@ -2,12 +2,12 @@ import random
 from typing import Literal, Optional, Union
 
 import discord
+from args import Role, User
 from core import Context, MyClient
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.localization import Localization
 from helpers import custom_response, random_helper
-from helpers.custom_args import CustomRole, CustomUser
 
 
 class ShopItem:
@@ -28,7 +28,7 @@ class ShopItem:
 		self._name = name
 		self._price = price
 		self._description = description
-		self._role = CustomRole.from_role(role)
+		self._role = Role.from_role(role)
 
 	@property
 	def name(self) -> str:
@@ -46,7 +46,7 @@ class ShopItem:
 		return self._description
 
 	@property
-	def role(self) -> CustomRole:
+	def role(self) -> Role:
 		"""The role that is given to the user when they buy the item."""
 		return self._role
 
@@ -276,7 +276,7 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 				return
 			embeds[0].clear_fields()
 			for i in rows:
-				user = CustomUser.from_user(self.client.get_user(i["user_id"]))
+				user = User.from_user(self.client.get_user(i["user_id"]))
 				number = rows.index(i) + 1
 				cash, bank = await self.helper.get_balance(i["user_id"], ctx.guild.id, wallet=None)
 				formatted = Localization.format_strings(template, user=user, number=number, cash=cash, bank=bank)

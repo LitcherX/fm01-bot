@@ -5,20 +5,11 @@ from typing import Any, Literal, Self
 
 import asyncpg
 import discord
+from args import FormatDateTime, Guild, Member, TextChannel, User
 from core import Context, MyClient
 from discord import app_commands
 from discord.ext import commands
-from helpers import (
-	CustomGuild,
-	CustomMember,
-	CustomTextChannel,
-	CustomUser,
-	FormatDateTime,
-	convert_to_query,
-	custom_response,
-	seconds_to_text,
-	text_to_seconds,
-)
+from helpers import convert_to_query, custom_response, seconds_to_text, text_to_seconds
 
 
 class CaseType(Enum):
@@ -383,20 +374,16 @@ class Case:
 		self._reason = value
 
 	@property
-	def guild(self) -> CustomGuild:
-		return CustomGuild.from_guild(self._guild)
+	def guild(self) -> Guild:
+		return Guild.from_guild(self._guild)
 
 	@property
-	def user(self) -> CustomUser:
-		return (
-			CustomUser.from_user(self._user)
-			if isinstance(self._user, discord.User)
-			else CustomMember.from_member(self._user)
-		)
+	def user(self) -> User:
+		return User.from_user(self._user) if isinstance(self._user, discord.User) else Member.from_member(self._user)
 
 	@property
-	def moderator(self) -> CustomUser:
-		return CustomUser.from_user(self._moderator)
+	def moderator(self) -> User:
+		return User.from_user(self._moderator)
 
 
 class Warn(Case):
@@ -808,7 +795,7 @@ class Moderation(commands.GroupCog, name="Moderation", group_name="mod"):
 	@app_commands.rename(duration="sm_specs-args-duration-name", channel="sm_specs-args-channel-name")
 	async def slowmode(self, ctx: Context, duration: str = None, channel: discord.TextChannel = None):
 		if not duration:
-			await ctx.send("mod.slowmode.current_slowmode", channel=CustomTextChannel.from_channel(ctx.channel))
+			await ctx.send("mod.slowmode.current_slowmode", channel=TextChannel.from_channel(ctx.channel))
 			return
 		if duration.lower() == "off":
 			duration = "0s"
