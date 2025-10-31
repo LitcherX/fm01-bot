@@ -12,12 +12,11 @@ from typing import Any, Optional, Union
 import aiohttp
 import asyncpg
 import discord
+from core import Command, Context, SlashCommandLocalizer, slash_command_localization, update_slash_localizations
 from discord import app_commands
 from discord.ext import commands, localization
-from helpers.emojis import LOADING
-
-from core import Command, Context, SlashCommandLocalizer, slash_command_localization, update_slash_localizations
 from helpers import custom_response, seconds_to_text
+from helpers.emojis import LOADING
 
 
 class MyClient(commands.AutoShardedBot):
@@ -25,6 +24,7 @@ class MyClient(commands.AutoShardedBot):
 
 	def __init__(self):
 		update_slash_localizations()
+		self.debug = True
 		self.logger = getLogger(__name__)
 		self.uptime: Optional[datetime.datetime] = None
 		self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
@@ -60,7 +60,7 @@ class MyClient(commands.AutoShardedBot):
 			return await response.json()
 
 	async def get_prefix(self, message: discord.Message) -> Union[str, list[str]]:
-		if __debug__:
+		if self.debug:
 			return "?"
 		if not message.guild:
 			return "?!"
@@ -252,7 +252,7 @@ class MyClient(commands.AutoShardedBot):
 			case _:
 				# if the error is unknown, log it
 				channel: discord.TextChannel = (
-					ctx.channel if __debug__ and ctx and ctx.channel else await self.fetch_channel(1268260404677574697)
+					ctx.channel if self.debug and ctx and ctx.channel else await self.fetch_channel(1268260404677574697)
 				)
 				stack = "".join(traceback.format_exception(type(error), error, error.__traceback__))
 				# if stack is more than 1700 characters, turn it into a .txt file and store it as an attachment
@@ -277,7 +277,7 @@ class MyClient(commands.AutoShardedBot):
 					f"**Command:** {ctx.command}\n"
 					f"```{stack}```",
 					file=file if too_long and file else discord.abc.MISSING,
-				)  # type: ignore
+				)
 				await ctx.reply(
 					f"An error has occured and has been reported to the developers. Report ID: `{ctx.message.id}`",
 					mention_author=False,

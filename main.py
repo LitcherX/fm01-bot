@@ -20,9 +20,11 @@ async def main() -> None:
 	logger.info("Starting the bot...")
 	load_dotenv()
 
+	debug = os.getenv("DEBUG") == "true"
 	client = MyClient()
+	client.debug = debug
 
-	if __debug__:
+	if client.debug:
 		token = os.getenv("DEBUG_TOKEN")
 		logger.info("Running in debug mode")
 	else:

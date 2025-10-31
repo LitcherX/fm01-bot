@@ -1,12 +1,14 @@
 """A helper for custom messages."""
 
+from __future__ import annotations
+
 import datetime
 import json
 import logging
 import pathlib
 import random
 import time
-from typing import Any, Optional, Union, overload
+from typing import TYPE_CHECKING, Any, Optional, Union, overload
 
 import discord
 from discord.ext import commands, localization
@@ -22,18 +24,21 @@ from .custom_args import (
 	FormatDateTime,
 )
 
+if TYPE_CHECKING:
+	from core.bot import MyClient
+
 logger = logging.getLogger(__name__)
 
 
 class CustomResponse:
 	"""A class to handle custom responses with localization."""
 
-	def __init__(self, client: discord.Client | type[discord.Client], name: Optional[str] = None) -> None:
+	def __init__(self, client: "MyClient", name: Optional[str] = None) -> None:
 		"""A custom message instance.
 
 		Parameters
 		----------
-		client: `discord.Client`
+		client: `MyClient`
 			The client object with a `db` attribute.
 		name: `str`
 			The name of the cog that uses this class.
@@ -203,7 +208,7 @@ class CustomResponse:
 				case _:
 					continue
 
-		if __debug__:
+		if self.client.debug:
 			now = time.time()
 			if now - self._last_debug_reload > 5:
 				self.load_localizations("../localization")
