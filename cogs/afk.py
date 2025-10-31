@@ -1,11 +1,11 @@
 from typing import Optional
 
 import discord
+from args import Member, User
+from core import Context, MyClient
 from discord import app_commands
 from discord.ext import commands
-
-from core import Context, MyClient
-from helpers import CustomMember, CustomUser, regex
+from helpers import regex
 
 
 @app_commands.guild_only()
@@ -63,9 +63,7 @@ class AFK(commands.Cog):
 				text = await self.custom_response(
 					"afk.reason",
 					ctx,
-					user=CustomUser.from_user(user)
-					if isinstance(user, discord.User)
-					else CustomMember.from_member(user),
+					user=User.from_user(user) if isinstance(user, discord.User) else Member.from_member(user),
 					reason=row["message"],
 				)
 				if isinstance(text, dict):

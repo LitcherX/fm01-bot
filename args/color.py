@@ -1,8 +1,9 @@
-import discord
 from typing import Optional
 
+import discord
 
-class CustomColor:
+
+class Color:
 	"""Custom colors for formatting purposes.
 
 	Operations
@@ -11,7 +12,7 @@ class CustomColor:
 
 	Examples
 	--------
-	>>> color = CustomColor(discord.Color.red())
+	>>> color = Color(discord.Color.red())
 	>>> color
 	#FF0000
 

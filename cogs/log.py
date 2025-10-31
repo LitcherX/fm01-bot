@@ -3,20 +3,20 @@ import sys
 from typing import Literal, Optional, Union, overload
 
 import discord
+from args import (
+	AutoModAction,
+	AutoModRule,
+	FormatDateTime,
+	Invite,
+	Message,
+	TextChannel,
+	User,
+	convert_to_custom_channel,
+)
 from core import Context, MyClient
 from discord import app_commands
 from discord.ext import commands
-from helpers import (
-	CustomAutoModAction,
-	CustomAutoModRule,
-	CustomInvite,
-	CustomMessage,
-	CustomResponse,
-	CustomTextChannel,
-	CustomUser,
-	FormatDateTime,
-	convert_to_custom_channel,
-)
+from helpers import CustomResponse
 
 
 class LogCommands(commands.Cog, name="Logging"):
@@ -53,7 +53,7 @@ class LogCommands(commands.Cog, name="Logging"):
 			channel.id,
 			is_on,
 		)
-		await ctx.send(content="log.toggle.on", channel=CustomTextChannel.from_channel(channel))
+		await ctx.send(content="log.toggle.on", channel=TextChannel.from_channel(channel))
 
 	@log_toggle.command(name="add", description="logadd_specs-description", usage="logadd_specs-usage")
 	@app_commands.rename(module="logadd_specs-args-module-name")
@@ -287,50 +287,41 @@ class LogListeners(commands.Cog):
 			return
 
 		if before.content != after.content:
-			before = CustomMessage.from_message(before)
+			before = Message.from_message(before)
 			before.content = before.content or " "
-			await self.send_webhook(before.guild.id, "content", before=before, after=CustomMessage.from_message(after))
+			await self.send_webhook(before.guild.id, "content", before=before, after=Message.from_message(after))
 		if before.embeds != after.embeds and len(before.embeds) != 0:
 			await self.send_webhook(
-				before.guild.id,
-				"embeds",
-				before=CustomMessage.from_message(before),
-				after=CustomMessage.from_message(after),
+				before.guild.id, "embeds", before=Message.from_message(before), after=Message.from_message(after)
 			)
 		if before.attachments != after.attachments:
 			await self.send_webhook(
-				before.guild.id,
-				"attachments",
-				before=CustomMessage.from_message(before),
-				after=CustomMessage.from_message(after),
+				before.guild.id, "attachments", before=Message.from_message(before), after=Message.from_message(after)
 			)
 		if before.pinned != after.pinned:
 			await self.send_webhook(
-				before.guild.id,
-				"pinned",
-				before=CustomMessage.from_message(before),
-				after=CustomMessage.from_message(after),
+				before.guild.id, "pinned", before=Message.from_message(before), after=Message.from_message(after)
 			)
 
 	@commands.Cog.listener()
 	async def on_automod_rule_create(self, rule: discord.AutoModRule):
-		await self.send_webhook(rule.guild.id, "create", rule=await CustomAutoModRule.from_rule(rule))
+		await self.send_webhook(rule.guild.id, "create", rule=await AutoModRule.from_rule(rule))
 
 	@commands.Cog.listener()
 	async def on_automod_rule_update(self, rule: discord.AutoModRule):
-		await self.send_webhook(rule.guild.id, "update", rule=await CustomAutoModRule.from_rule(rule))
+		await self.send_webhook(rule.guild.id, "update", rule=await AutoModRule.from_rule(rule))
 
 	@commands.Cog.listener()
 	async def on_automod_rule_delete(self, rule: discord.AutoModRule):
-		await self.send_webhook(rule.guild.id, "delete", rule=await CustomAutoModRule.from_rule(rule))
+		await self.send_webhook(rule.guild.id, "delete", rule=await AutoModRule.from_rule(rule))
 
 	@commands.Cog.listener()
 	async def on_automod_action(self, execution: discord.AutoModAction):
-		await self.send_webhook(execution.guild_id, "action", execution=CustomAutoModAction.from_action(execution))
+		await self.send_webhook(execution.guild_id, "action", execution=AutoModAction.from_action(execution))
 
 	@commands.Cog.listener()
 	async def on_invite_create(self, invite: discord.Invite):
-		custom_invite = CustomInvite.from_invite(invite)
+		custom_invite = Invite.from_invite(invite)
 		await self.send_webhook(invite.guild.id, "create", invite=custom_invite)
 
 	@commands.Cog.listener()
@@ -343,12 +334,12 @@ class LogListeners(commands.Cog):
 		async for entry in invite.guild.audit_logs(action=discord.AuditLogAction.invite_delete, limit=5):  # type: ignore
 			# deletion data is useless for invites by itself, so we parse the 'before' state
 			if entry.before.code == invite.code:
-				actor = CustomUser.from_user(entry.user) if entry.user else None
+				actor = User.from_user(entry.user) if entry.user else None
 				found_entry = entry
 				break
 
 		if found_entry:
-			custom_invite = CustomInvite.from_audit_log_diff(found_entry.before)
+			custom_invite = Invite.from_audit_log_diff(found_entry.before)
 			custom_invite._inviter = actor
 			await self.send_webhook(invite.guild.id, "delete", invite=custom_invite)
 
@@ -358,7 +349,7 @@ class LogListeners(commands.Cog):
 		if custom_channel:
 			created_by = await self._get_actor(channel.guild, channel.id, discord.AuditLogAction.channel_create)
 			await self.send_webhook(
-				channel.guild.id, "create", channel=custom_channel, created_by=CustomUser.from_user(created_by)
+				channel.guild.id, "create", channel=custom_channel, created_by=User.from_user(created_by)
 			)
 
 	@commands.Cog.listener()
@@ -368,7 +359,7 @@ class LogListeners(commands.Cog):
 			deleted_by = None
 			async for entry in channel.guild.audit_logs(limit=5, action=discord.AuditLogAction.channel_delete):  # type: ignore
 				if entry.before.name == channel.name and entry.before.type == channel.type:
-					deleted_by = CustomUser.from_user(entry.user)
+					deleted_by = User.from_user(entry.user)
 					break
 			await self.send_webhook(channel.guild.id, "delete", channel=custom_channel, deleted_by=deleted_by)
 
@@ -407,7 +398,7 @@ class LogListeners(commands.Cog):
 						attr,
 						before=custom_before,
 						after=custom_after,
-						updated_by=CustomUser.from_user(updated_by),
+						updated_by=User.from_user(updated_by),
 					)
 
 		if custom_before.name != custom_after.name:
@@ -415,11 +406,7 @@ class LogListeners(commands.Cog):
 				after.guild, after.id, discord.AuditLogAction.channel_update, changed_attribute="name"
 			)
 			await self.send_webhook(
-				before.guild.id,
-				"name",
-				before=custom_before,
-				after=custom_after,
-				updated_by=CustomUser.from_user(updated_by),
+				before.guild.id, "name", before=custom_before, after=custom_after, updated_by=User.from_user(updated_by)
 			)
 		if custom_before.topic != custom_after.topic:
 			updated_by = await self._get_actor(
@@ -430,18 +417,14 @@ class LogListeners(commands.Cog):
 				"topic",
 				before=custom_before,
 				after=custom_after,
-				updated_by=CustomUser.from_user(updated_by),
+				updated_by=User.from_user(updated_by),
 			)
 		if custom_before.nsfw != custom_after.nsfw:
 			updated_by = await self._get_actor(
 				after.guild, after.id, discord.AuditLogAction.channel_update, changed_attribute="nsfw"
 			)
 			await self.send_webhook(
-				before.guild.id,
-				"nsfw",
-				before=custom_before,
-				after=custom_after,
-				updated_by=CustomUser.from_user(updated_by),
+				before.guild.id, "nsfw", before=custom_before, after=custom_after, updated_by=User.from_user(updated_by)
 			)
 		if custom_before.slowmode_delay != custom_after.slowmode_delay:
 			updated_by = await self._get_actor(
@@ -452,7 +435,7 @@ class LogListeners(commands.Cog):
 				"slowmode",
 				before=custom_before,
 				after=custom_after,
-				updated_by=CustomUser.from_user(updated_by),
+				updated_by=User.from_user(updated_by),
 			)
 		if custom_before.position != custom_after.position:
 			await self.send_webhook(before.guild.id, "position", before=custom_before, after=custom_after)
@@ -470,7 +453,7 @@ class LogListeners(commands.Cog):
 					before.guild.id,
 					"permissions",
 					diff=diff_string,
-					updated_by=CustomUser.from_user(updated_by),
+					updated_by=User.from_user(updated_by),
 					channel=custom_after,
 				)
 
@@ -486,8 +469,8 @@ class LogListeners(commands.Cog):
 		await self.send_webhook(
 			message.guild.id,
 			"delete",
-			message=CustomMessage.from_message(message),
-			deleted_by=CustomUser.from_user(deleted_by) if deleted_by else None,
+			message=Message.from_message(message),
+			deleted_by=User.from_user(deleted_by) if deleted_by else None,
 		)
 
 

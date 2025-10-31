@@ -5,26 +5,26 @@ from typing import Optional
 import discord
 import pypokedex
 import requests
+from args import (
+	Bot,
+	Category,
+	Emoji,
+	ForumChannel,
+	Guild,
+	IPAddress,
+	Member,
+	PartialEmoji,
+	Role,
+	StageChannel,
+	Template,
+	TextChannel,
+	User,
+	VoiceChannel,
+)
 from core import Context, MyClient
 from discord import app_commands
 from discord.ext import commands
 from emoji.unicode_codes import EMOJI_DATA
-from helpers.custom_args import (
-	BotInfo,
-	CustomCategoryChannel,
-	CustomEmoji,
-	CustomForumChannel,
-	CustomGuild,
-	CustomMember,
-	CustomPartialEmoji,
-	CustomRole,
-	CustomStageChannel,
-	CustomTemplate,
-	CustomTextChannel,
-	CustomUser,
-	CustomVoiceChannel,
-	IPAddress,
-)
 from helpers.regex import DISCORD_TEMPLATE
 
 
@@ -58,23 +58,23 @@ class Info(commands.Cog, name="Information"):
 		user = user or ctx.author
 
 		if not ctx.guild and type(user) is discord.User:
-			await ctx.send("info.user.not_member", member=CustomUser.from_user(user))
+			await ctx.send("info.user.not_member", member=User.from_user(user))
 			return
 
 		if isinstance(user, discord.Member):
-			await ctx.send("info.user.member", member=CustomMember.from_member(user))
+			await ctx.send("info.user.member", member=Member.from_member(user))
 			return
 
 		try:
 			member = await ctx.guild.fetch_member(user.id)
-			await ctx.send("info.user.member", member=CustomMember.from_member(member))
+			await ctx.send("info.user.member", member=Member.from_member(member))
 		except discord.NotFound:
-			await ctx.send("info.user.not_member", member=CustomUser.from_user(user))
+			await ctx.send("info.user.not_member", member=User.from_user(user))
 
 	@info.command(name="server", description="serverinfo_specs-description")
 	@commands.guild_only()
 	async def server(self, ctx: Context):
-		await ctx.send("info.server", server=CustomGuild.from_guild(ctx.guild))
+		await ctx.send("info.server", server=Guild.from_guild(ctx.guild))
 
 	@info.command(name="role", description="roleinfo_specs-description")
 	@commands.guild_only()
@@ -84,7 +84,7 @@ class Info(commands.Cog, name="Information"):
 		role = role or ctx.author.top_role
 		if not role:
 			raise commands.BadArgument("role")
-		await ctx.send("info.role", role=CustomRole.from_role(role))
+		await ctx.send("info.role", role=Role.from_role(role))
 
 	@info.command(name="ip", description="ipinfo_specs-description")
 	@app_commands.rename(ip_addr="ipinfo_specs-args-ip-name")
@@ -99,7 +99,7 @@ class Info(commands.Cog, name="Information"):
 
 	@info.command(name="bot", description="botinfo_specs-description")
 	async def bot(self, ctx: Context):
-		await ctx.send("info.bot", bot=BotInfo(self.client))
+		await ctx.send("info.bot", bot=Bot(self.client))
 
 	@info.command(name="emoji", description="emojiinfo_specs-description")
 	@app_commands.rename(emoji_name="emojiinfo_specs-args-emoji-name")
@@ -110,9 +110,9 @@ class Info(commands.Cog, name="Information"):
 		except commands.BadArgument:
 			emoji = discord.PartialEmoji.from_str(emoji_name)
 		if isinstance(emoji, discord.Emoji):
-			await ctx.send("info.emoji.custom_emoji", emoji=CustomEmoji.from_emoji(emoji))
+			await ctx.send("info.emoji.custom_emoji", emoji=Emoji.from_emoji(emoji))
 		elif isinstance(emoji, discord.PartialEmoji) and emoji.name in EMOJI_DATA:
-			await ctx.send("info.emoji.unicode_emoji", emoji=CustomPartialEmoji.from_emoji(emoji))
+			await ctx.send("info.emoji.unicode_emoji", emoji=PartialEmoji.from_emoji(emoji))
 		else:
 			raise commands.BadArgument("emoji")
 
@@ -122,15 +122,15 @@ class Info(commands.Cog, name="Information"):
 	@app_commands.describe(channel="chinfo_specs-args-channel-description")
 	async def channel(self, ctx: Context, channel: discord.abc.GuildChannel):
 		if isinstance(channel, discord.TextChannel):
-			await ctx.send("info.channel.text", channel=CustomTextChannel.from_channel(channel))
+			await ctx.send("info.channel.text", channel=TextChannel.from_channel(channel))
 		elif isinstance(channel, discord.VoiceChannel):
-			await ctx.send("info.channel.voice", channel=CustomVoiceChannel.from_channel(channel))
+			await ctx.send("info.channel.voice", channel=VoiceChannel.from_channel(channel))
 		elif isinstance(channel, discord.CategoryChannel):
-			await ctx.send("info.channel.category", category=CustomCategoryChannel.from_category(channel))
+			await ctx.send("info.channel.category", category=Category.from_category(channel))
 		elif isinstance(channel, discord.ForumChannel):
-			await ctx.send("info.channel.forum", channel=CustomForumChannel.from_channel(channel))
+			await ctx.send("info.channel.forum", channel=ForumChannel.from_channel(channel))
 		elif isinstance(channel, discord.StageChannel):
-			await ctx.send("info.channel.stage", channel=CustomStageChannel.from_channel(channel))
+			await ctx.send("info.channel.stage", channel=StageChannel.from_channel(channel))
 		else:
 			raise commands.BadArgument("channel")
 
@@ -162,13 +162,13 @@ class Info(commands.Cog, name="Information"):
 		if template_code:
 			try:
 				template_obj = await self.client.fetch_template(template_code)
-				return await ctx.send("info.template", template=CustomTemplate.from_template(template_obj))
+				return await ctx.send("info.template", template=Template.from_template(template_obj))
 			except discord.NotFound:
 				pass
 
 		template_code = await self.client.db.fetchrow("SELECT * FROM snapshots WHERE code = $1", template.lower())
 		if template_code:
-			return await ctx.send("info.template", template=await CustomTemplate.from_dict(self.client, template_code))
+			return await ctx.send("info.template", template=await Template.from_dict(self.client, template_code))
 		raise commands.BadArgument("template")
 
 
