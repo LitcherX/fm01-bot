@@ -1,8 +1,9 @@
+import argparse
 import asyncio
 import os
 
-from core.bot import MyClient
-from core.logging import logger
+from core.bot import Bot
+from core.logger import logger
 from dotenv import load_dotenv
 
 try:
@@ -15,13 +16,15 @@ except ImportError:
 	else:
 		asyncio.set_event_loop_policy(asyncio.DefaultEventLoopPolicy())
 
+parser = argparse.ArgumentParser(prog="fm01")
+parser.add_argument("--debug", action="store_true")
 
-async def main() -> None:
+
+async def main(debug=False) -> None:
 	logger.info("Starting the bot...")
 	load_dotenv()
 
-	debug = os.getenv("DEBUG") == "true"
-	client = MyClient()
+	client = Bot()
 	client.debug = debug
 
 	if client.debug:
@@ -31,8 +34,12 @@ async def main() -> None:
 		token = os.getenv("TOKEN")
 		logger.info("Running in production mode")
 
-	await client.start(token)
+	if token:
+		await client.start(token)
+	else:
+		logger.error("Token not found")
 
 
 if __name__ == "__main__":
-	asyncio.run(main())
+	args = parser.parse_args()
+	asyncio.run(main(args.debug))

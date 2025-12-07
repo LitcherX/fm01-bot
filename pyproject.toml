@@ -1,12 +1,13 @@
 [project]
-name = "lumin"
+name = "fm01"
 version = "0.6.1"
-description = "fm01 v2.0 - closed beta"
+description = "All-in-one Discord bot for general purposes"
 authors = [
     { name = "Pearoo", email = "contact@pearoo.dev" }
 ]
 readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
 
 dependencies = [
     "discord-localization>=1.1.4",
@@ -22,7 +23,7 @@ dependencies = [
     "emoji>=2.14.1",
     "pypokedex>=1.6.0",
     "art>=6.5",
-    "ruff>=0.13.1",
+    "ruff>=0.14.8",
     "pillow>=11.3.0",
     "asyncpraw>=7.8.1",
     "pytemperature>=1.1",
@@ -30,7 +31,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ruff>=0.13.1",
+    "ruff>=0.14.8",
 ]
 
 [tool.setuptools]

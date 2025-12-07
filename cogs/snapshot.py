@@ -7,13 +7,13 @@ from uuid import UUID
 
 import asyncpg
 import discord
-from core import Context, MyClient
+from core import Context, Bot
 from discord import app_commands
 from discord.ext import commands
 
 
 class Snapshot(commands.Cog, name="Snapshots"):
-	def __init__(self, client: MyClient):
+	def __init__(self, client: Bot):
 		self.client = client
 		self.connection: asyncpg.Pool = client.db
 		self.custom_response = client.custom_response
@@ -348,5 +348,5 @@ class Snapshot(commands.Cog, name="Snapshots"):
 		await ctx.send("snapshot.load")
 
 
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(Snapshot(client))

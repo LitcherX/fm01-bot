@@ -3,7 +3,7 @@ from urllib.parse import quote_plus
 
 import discord
 from art import text2art
-from core import Context, MyClient
+from core import Context, Bot
 from discord import app_commands
 from discord.ext import commands
 from helpers import CustomResponse
@@ -12,7 +12,7 @@ from helpers.regex import DISCORD_MESSAGE_URL
 
 
 class Say(commands.Cog, name="Says"):
-	def __init__(self, client: MyClient):
+	def __init__(self, client: Bot):
 		self.client = client
 		self.custom_response: CustomResponse = CustomResponse(client)
 
@@ -108,5 +108,5 @@ class Say(commands.Cog, name="Says"):
 		await ctx.send("say.clap", message=message.replace(" ", "👏"))
 
 
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(Say(client))

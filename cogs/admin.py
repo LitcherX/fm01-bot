@@ -1,18 +1,19 @@
 from logging import getLogger
+import os
 from time import perf_counter
 from typing import Literal, Optional
 
 import discord
-from core import Context, MyClient, update_slash_localizations
+from core import Bot, Context, update_slash_localizations
 from discord import app_commands
 from discord.ext import commands
 
 logger = getLogger(__name__)
 
 
-class Admin(commands.Cog):
-	def __init__(self, client: MyClient):
-		self.client: MyClient = client
+class Admin(commands.GroupCog, name="admin"):
+	def __init__(self, client: Bot):
+		self.client: Bot = client
 
 	@commands.hybrid_command(
 		hidden=True, name="reload", description="reload_specs-description", usage="reload_specs-usage"
@@ -70,6 +71,19 @@ class Admin(commands.Cog):
 		ctx.bot.custom_response.load_localizations(path)
 		await ctx.reply(content="Reloaded localization files.")
 		logger.info(f"{ctx.author.name} reloaded localization files.")
+
+	@commands.hybrid_command(
+		hidden=True, name="restart", description="restart_specs-description", usage="restart_specs-usage"
+	)
+	@commands.is_owner()
+	async def restart(self, ctx: Context):
+		await ctx.reply(content="Restarting bot...")
+		logger.info(f"{ctx.author.name} restarted the bot.")
+		await self.client.close()
+		if self.client.debug:
+			await self.client.start(os.getenv("DEBUG_TOKEN"))
+		else:
+			await self.client.start(os.getenv("TOKEN"))
 
 	@commands.hybrid_command(hidden=True, name="sync", description="sync_specs-description", usage="sync_specs-usage")
 	@commands.is_owner()
@@ -129,5 +143,5 @@ class Admin(commands.Cog):
 			await ctx.reply(content=f"Synced the tree to **{guilds_synced}/{len(guilds)}** guilds, took **{end:.2f}s**")
 
 
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(Admin(client))

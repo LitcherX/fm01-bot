@@ -1,7 +1,7 @@
 from typing import Any, Literal, Optional, get_args, get_origin
 
 import discord
-from core import Command, Context, MyClient
+from core import Command, Context, Bot
 from discord.ext import commands
 from discord.ext.commands._types import BotT
 from discord.ext.localization import Localization
@@ -135,7 +135,7 @@ class HelpCommand(commands.HelpCommand):
 
 
 class Help(commands.Cog, command_attrs=dict(hidden=True)):
-	def __init__(self, client: MyClient):
+	def __init__(self, client: Bot):
 		self.client = client
 		help_command = HelpCommand()
 		help_command.custom_response = client.custom_response
@@ -143,5 +143,5 @@ class Help(commands.Cog, command_attrs=dict(hidden=True)):
 		self.client.help_command = help_command
 
 
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(Help(client))

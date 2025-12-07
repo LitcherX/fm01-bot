@@ -6,7 +6,7 @@ from typing import Any, Literal, Self
 import asyncpg
 import discord
 from args import FormatDateTime, Guild, Member, TextChannel, User
-from core import Context, MyClient
+from core import Context, Bot
 from discord import app_commands
 from discord.ext import commands
 from helpers import convert_to_query, custom_response, seconds_to_text, text_to_seconds
@@ -404,7 +404,7 @@ class Warn(Case):
 
 	async def after_creation(self) -> None:
 		"""Notifies the user about the warning."""
-		_custom_response = custom_response.CustomResponse(MyClient, "mod")
+		_custom_response = custom_response.CustomResponse(Bot, "mod")
 		message = await _custom_response.get_message("mod.warn.notify", self._guild, warn=self)
 
 		try:
@@ -415,7 +415,7 @@ class Warn(Case):
 
 	async def after_deletion(self) -> None:
 		"""Notifies the user about the removal of the warning."""
-		_custom_response = custom_response.CustomResponse(MyClient, "mod")
+		_custom_response = custom_response.CustomResponse(Bot, "mod")
 		message = await _custom_response.get_message("mod.warn.unwarned", self._guild, warn=self)
 
 		try:
@@ -441,7 +441,7 @@ class Kick(Case):
 
 	async def before_creation(self) -> None:
 		"""Notifies the user about the kick."""
-		self._custom_response = custom_response.CustomResponse(MyClient, "mod")
+		self._custom_response = custom_response.CustomResponse(Bot, "mod")
 		message = await self._custom_response.get_message("mod.kick.notify", self._guild, kick=self)
 
 		try:
@@ -472,7 +472,7 @@ class Mute(Case):
 
 	async def before_creation(self) -> None:
 		"""Mutes the user."""
-		self._custom_response = custom_response.CustomResponse(MyClient, "mod")
+		self._custom_response = custom_response.CustomResponse(Bot, "mod")
 		reason = await self._custom_response("mod.mute.reason", self._guild, mute=self)
 		if isinstance(self._user, discord.Member) and self.expires is not None:
 			await self._user.timeout(
@@ -481,7 +481,7 @@ class Mute(Case):
 
 	async def after_creation(self) -> None:
 		"""Notifies the user about the mute."""
-		self._custom_response = custom_response.CustomResponse(MyClient, "mod")
+		self._custom_response = custom_response.CustomResponse(Bot, "mod")
 		message = await self._custom_response.get_message("mod.mute.notify", self._guild, mute=self)
 
 		try:
@@ -500,7 +500,7 @@ class Mute(Case):
 
 	async def after_deletion(self) -> None:
 		"""Notifies the user about the unmute."""
-		self._custom_response = custom_response.CustomResponse(MyClient, "mod")
+		self._custom_response = custom_response.CustomResponse(Bot, "mod")
 		message = await self._custom_response.get_message("mod.unmute.notify", self._guild, mute=self)
 
 		try:
@@ -526,7 +526,7 @@ class Ban(Case):
 
 	async def before_creation(self) -> None:
 		"""Notifies the user about the ban."""
-		self._custom_response = custom_response.CustomResponse(MyClient, "mod")
+		self._custom_response = custom_response.CustomResponse(Bot, "mod")
 		message = await self._custom_response.get_message("mod.ban.notify", self._guild, ban=self)
 
 		try:
@@ -549,7 +549,7 @@ class Ban(Case):
 	async def after_deletion(self) -> None:
 		"""Notifies the user about the unban."""
 		if self._guild.get_member(self._user.id):  # to avoid spamming non-members
-			self._custom_response = custom_response.CustomResponse(MyClient, "mod")
+			self._custom_response = custom_response.CustomResponse(Bot, "mod")
 			message = await self._custom_response.get_message("mod.unban.notify", self._guild, ban=self)
 
 			try:
@@ -562,7 +562,7 @@ class Ban(Case):
 @commands.guild_only()
 @app_commands.guild_only()
 class Moderation(commands.GroupCog, name="Moderation", group_name="mod"):
-	def __init__(self, client: MyClient) -> None:
+	def __init__(self, client: Bot) -> None:
 		self.client = client
 		self.custom_response = custom_response.CustomResponse(client, "mod")
 
@@ -822,7 +822,7 @@ class Moderation(commands.GroupCog, name="Moderation", group_name="mod"):
 @commands.guild_only()
 @app_commands.guild_only()
 class Cases(commands.Cog, name="Cases"):
-	def __init__(self, client: MyClient) -> None:
+	def __init__(self, client: Bot) -> None:
 		self.client = client
 		self.custom_response = custom_response.CustomResponse(client, "mod")
 
@@ -972,6 +972,6 @@ class Cases(commands.Cog, name="Cases"):
 		await ctx.send(**message)
 
 
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(Moderation(client))
 	await client.add_cog(Cases(client))

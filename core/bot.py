@@ -17,11 +17,10 @@ from discord import app_commands
 from discord.ext import commands, localization
 from helpers import custom_response, seconds_to_text
 from helpers.emojis import LOADING
+from io import StringIO
 
 
-class MyClient(commands.AutoShardedBot):
-	"""Represents the bot client. Inherits from `commands.AutoShardedBot`."""
-
+class Bot(commands.AutoShardedBot):
 	def __init__(self):
 		update_slash_localizations()
 		self.debug = True
@@ -29,7 +28,7 @@ class MyClient(commands.AutoShardedBot):
 		self.uptime: Optional[datetime.datetime] = None
 		self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 		intents: discord.Intents = discord.Intents.all()
-		self.db: asyncpg.Pool | None = None
+		self.db: asyncpg.Pool = None  # type: ignore
 		self.session: aiohttp.ClientSession | None = None
 		self.ready_event = asyncio.Event()
 		self.owner_ids = {
@@ -39,14 +38,13 @@ class MyClient(commands.AutoShardedBot):
 			1051181672508444683,  # sarky
 		}
 		super().__init__(
-			command_prefix=self.get_prefix,
+			command_prefix=self.get_prefix,  # type: ignore
 			heartbeat_timeout=150.0,
 			intents=intents,
 			case_insensitive=False,
 			activity=discord.CustomActivity(name="Bot starting...", emoji="🟡"),
 			status=discord.Status.idle,
 			chunk_guilds_at_startup=False,
-			loop=self.loop,
 			member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
 			max_messages=20000,
 			allowed_contexts=app_commands.AppCommandContext(guild=True, dm_channel=True, private_channel=True),
@@ -150,6 +148,7 @@ class MyClient(commands.AutoShardedBot):
 
 		# Load all cogs within the cogs folder
 		allowed: list[str] = [
+			"admin",
 			"afk",
 			"basic",
 			"economy",
@@ -254,18 +253,35 @@ class MyClient(commands.AutoShardedBot):
 				channel: discord.TextChannel = (
 					ctx.channel if self.debug and ctx and ctx.channel else await self.fetch_channel(1268260404677574697)
 				)
-				stack = "".join(traceback.format_exception(type(error), error, error.__traceback__))
-				# if stack is more than 1700 characters, turn it into a .txt file and store it as an attachment
+
+				# show original error for chained exceptions
+				root_exc = None
+				if getattr(error, "__cause__"):
+					root_exc = error.__cause__
+				elif getattr(error, "__context__") and not getattr(error, "__suppress_context__"):
+					root_exc = error.__context__
+				if root_exc:
+					stack = "".join(traceback.format_exception(type(root_exc), root_exc, root_exc.__traceback__))
+				else:
+					stack = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+				for marker in (
+					"The above exception was the direct cause of the following exception:",
+					"During handling of the above exception, another exception occurred:",
+				):
+					if marker in stack:
+						stack = stack.split(marker)[0].rstrip()
+						break
+
+				# if stack is more than 1700 characters, make it a file
 				too_long = len(stack) > 1700
 				file: discord.File | None = None
 				if too_long:
-					with open("auto-report_stack-trace.txt", "w") as f:
+					string_io = StringIO()
+					with string_io as f:
 						f.write(stack)
-					file = discord.File(fp="auto-report_stack-trace.txt", filename="error.txt")
+					file = discord.File(fp=string_io, filename="error.txt")
 					stack = "The stack trace was too long to send in a message, so it was saved as a file."
-				webhook: discord.Webhook = discord.utils.get(
-					await channel.webhooks(), name=f"{self.user.display_name} Errors"
-				)
+				webhook = discord.utils.get(await channel.webhooks(), name=f"{self.user.display_name} Errors")
 				if not webhook:
 					webhook = await channel.create_webhook(
 						name=f"{self.user.display_name} Errors", avatar=await ctx.me.avatar.read()
@@ -298,7 +314,7 @@ class MyClient(commands.AutoShardedBot):
 		try:
 			# Signals that the bot is still thinking / performing a task
 			if ctx.interaction and ctx.interaction.type == discord.InteractionType.application_command:
-				await ctx.interaction.response.defer(thinking=True)  # type: ignore
+				await ctx.interaction.response.defer(thinking=True)
 			else:
 				await ctx.message.add_reaction(LOADING)
 		except discord.HTTPException:

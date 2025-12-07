@@ -2,12 +2,12 @@ import logging
 import random
 
 import discord
-from core import MyClient
+from core import Bot
 from discord.ext import commands, tasks
 
 
 class Status(commands.Cog, command_attrs=dict(hidden=True)):
-	def __init__(self, client: MyClient):
+	def __init__(self, client: Bot):
 		self.client = client
 
 	@tasks.loop(minutes=1)
@@ -42,5 +42,5 @@ class Status(commands.Cog, command_attrs=dict(hidden=True)):
 			logging.info("Status loaded!")
 
 
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(Status(client))

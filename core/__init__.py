@@ -2,7 +2,7 @@
 Core functionality needed for the bot to run.
 
 This library exists to avoid circular imports and to clean up the mess that could be seen previously
-in main.py. It's mostly used for type hints (especially MyClient and Context).
+in main.py. It's mostly used for type hints (especially Bot and Context).
 """
 # ruff: noqa F403
 

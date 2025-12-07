@@ -5,41 +5,25 @@ from typing import Optional
 import discord
 import pypokedex
 import requests
-from args import (
-	Bot,
-	Category,
-	Emoji,
-	ForumChannel,
-	Guild,
-	IPAddress,
-	Member,
-	PartialEmoji,
-	Role,
-	StageChannel,
-	Template,
-	TextChannel,
-	User,
-	VoiceChannel,
-)
-from core import Context, MyClient
+from _emoji.unicode_codes import EMOJI_DATA
 from discord import app_commands
 from discord.ext import commands
-from emoji.unicode_codes import EMOJI_DATA
+
+from args import (Bot, Category, Emoji, ForumChannel, Guild, IPAddress, Member, PartialEmoji, Role, StageChannel,
+                  Template, TextChannel, User, VoiceChannel, )
+from core import Context, Bot
 from helpers.regex import DISCORD_TEMPLATE
 
-
 class Info(commands.Cog, name="Information"):
-	def __init__(self, client: MyClient):
+	def __init__(self, client: Bot):
 		self.client = client
 
 	@commands.hybrid_group(name="info", description="info_specs-description")
 	@app_commands.rename(argument="info_specs-args-argument-name")
 	@app_commands.describe(argument="info_specs-args-argument-description")
 	async def info(
-		self,
-		ctx: Context,
-		argument: discord.User | discord.abc.GuildChannel | discord.Role | discord.Emoji | discord.PartialEmoji,
-	):
+		self, ctx: Context,
+		argument: discord.User | discord.abc.GuildChannel | discord.Role | discord.Emoji | discord.PartialEmoji, ):
 		if isinstance(argument, discord.User):
 			await ctx.invoke(self.info.get_command("user"), argument)  # type: ignore
 		elif isinstance(argument, discord.abc.GuildChannel):
@@ -139,7 +123,9 @@ class Info(commands.Cog, name="Information"):
 	@app_commands.describe(pokemon_name="pokeinfo_specs-args-pokemon-description")
 	async def pokemon(self, ctx: Context, pokemon_name: str):
 		try:
-			pokemon = await asyncio.get_event_loop().run_in_executor(None, lambda: pypokedex.get(name=pokemon_name))  # type: ignore
+			pokemon = await asyncio.get_event_loop().run_in_executor(
+				None, lambda: pypokedex.get(name=pokemon_name)
+				)  # type: ignore
 		except requests.HTTPError:
 			raise commands.BadArgument("pokemon")
 		pokemon.type = "\n".join(pokemon.types)
@@ -171,6 +157,5 @@ class Info(commands.Cog, name="Information"):
 			return await ctx.send("info.template", template=await Template.from_dict(self.client, template_code))
 		raise commands.BadArgument("template")
 
-
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(Info(client))

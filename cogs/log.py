@@ -13,14 +13,14 @@ from args import (
 	User,
 	convert_to_custom_channel,
 )
-from core import Context, MyClient
+from core import Context, Bot
 from discord import app_commands
 from discord.ext import commands
 from helpers import CustomResponse
 
 
 class LogCommands(commands.Cog, name="Logging"):
-	def __init__(self, client: MyClient) -> None:
+	def __init__(self, client: Bot) -> None:
 		self.client = client
 
 	@commands.hybrid_group(
@@ -85,7 +85,7 @@ class LogCommands(commands.Cog, name="Logging"):
 
 
 class LogListeners(commands.Cog):
-	def __init__(self, client: MyClient) -> None:
+	def __init__(self, client: Bot) -> None:
 		self.client = client
 
 	# TODO:
@@ -474,6 +474,6 @@ class LogListeners(commands.Cog):
 		)
 
 
-async def setup(client: MyClient) -> None:
+async def setup(client: Bot) -> None:
 	await client.add_cog(LogCommands(client))
 	await client.add_cog(LogListeners(client))

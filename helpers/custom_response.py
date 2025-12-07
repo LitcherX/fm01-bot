@@ -11,20 +11,12 @@ import time
 from typing import TYPE_CHECKING, Any, Optional, Union, overload
 
 import discord
-from args import (
-	Emoji,
-	FormatDateTime,
-	Guild,
-	Member,
-	PartialEmoji,
-	Role,
-	User,
-)
+from args import Emoji, FormatDateTime, Guild, Member, PartialEmoji, Role, User
 from discord.ext import commands, localization
 from helpers import emojis
 
 if TYPE_CHECKING:
-	from core.bot import MyClient
+	from core.bot import Bot
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +24,12 @@ logger = logging.getLogger(__name__)
 class CustomResponse:
 	"""A class to handle custom responses with localization."""
 
-	def __init__(self, client: "MyClient", name: Optional[str] = None) -> None:
+	def __init__(self, client: "Bot", name: Optional[str] = None) -> None:
 		"""A custom message instance.
 
 		Parameters
 		----------
-		client: `MyClient`
+		client: `Bot`
 			The client object with a `db` attribute.
 		name: `str`
 			The name of the cog that uses this class.
@@ -45,7 +37,7 @@ class CustomResponse:
 		self.client = client
 		self.name = name
 		self.localizations: dict[str, dict] = {}
-		self._localizer = None
+		self._localizer: localization.Localization = None
 		self._last_debug_reload: float = 0
 
 		self.load_localizations()
@@ -164,21 +156,21 @@ class CustomResponse:
 
 		match original:
 			case discord.Guild():
-				guild_id = original.id  # noqa: F841
+				guild_id = original.id  # type: ignore
 			case discord.Interaction() | commands.Context():
-				guild_id = original.guild.id  # noqa: F841
+				guild_id = original.guild.id  # type: ignore
 			case _:
-				guild_id = None  # noqa: F841
+				guild_id = None
 
 		# these are variables that are always inserted into commands IF there is a context
 		context_formatting = {
 			"author": Member.from_member(original.author)
 			if isinstance(original, commands.Context)
-			else Member.from_member(original.user)
+			else Member.from_member(original.user)  # type: ignore
 			if isinstance(original, discord.Interaction)
 			else None,
 			"guild": (
-				Guild.from_guild(original.guild)
+				Guild.from_guild(original.guild)  # type: ignore
 				if isinstance(original, (discord.Interaction, commands.Context)) and hasattr(original, "guild")
 				else Guild.from_guild(original)
 				if isinstance(original, discord.Guild)

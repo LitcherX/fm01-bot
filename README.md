@@ -1,4 +1,4 @@
-# Lumin
+# fm01
 
 [![Crowdin](https://badges.crowdin.net/project-lumin/localized.svg)](https://crowdin.com/project/project-lumin)
 [![GitHub Release](https://img.shields.io/github/v/release/project-lumin/closed-beta)](https://github.com/project-lumin/closed-beta/releases/latest)
@@ -8,7 +8,7 @@
 ![Top Language](https://img.shields.io/github/languages/top/project-lumin/closed-beta)
 ![Commit Activity](https://img.shields.io/github/commit-activity/m/project-lumin/closed-beta)
 
-**Lumin** is a Discord bot built to replace and improve upon its predecessor, *FightMan01 bot*. It's a versatile bot
+**fm01** is a Discord bot built to replace and improve upon its predecessor, *FightMan01 bot*. It's a versatile bot
 featuring moderation, utility, and fun commands.
 
 ## Running the Bot
@@ -24,8 +24,8 @@ featuring moderation, utility, and fun commands.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/project-lumin/closed-beta.git
-   cd lumin
+   git clone https://github.com/fm01-bot/bot.git
+   cd bot
    ```
 
 2. **Create a `.env` file** in the project root (follow the `.env.example` template)
@@ -45,7 +45,7 @@ featuring moderation, utility, and fun commands.
    If you want to run the bot in **debug mode**, run:
 
    ```bash
-   uv run main.py
+   uv run main.py --debug
    ```
 
 ## Using Docker

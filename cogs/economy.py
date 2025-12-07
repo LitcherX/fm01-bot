@@ -3,7 +3,7 @@ from typing import Literal, Optional, Union
 
 import discord
 from args import Role, User
-from core import Context, MyClient
+from core import Context, Bot
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.localization import Localization
@@ -59,7 +59,7 @@ class ShopItem:
 
 class EconomyHelper:
 	def __init__(self, client):
-		self.client: MyClient = client
+		self.client: Bot = client
 
 	async def add_money(
 		self, user_id: int, guild_id: int, amount: int, wallet: Literal["cash", "bank"] = "cash"
@@ -251,7 +251,7 @@ class EconomyHelper:
 @app_commands.guild_only()
 @commands.guild_only()
 class Economy(commands.GroupCog, name="Economy", group_name="economy"):
-	def __init__(self, client: MyClient):
+	def __init__(self, client: Bot):
 		self.client = client
 		self.helper = EconomyHelper(client)
 		self.custom_response = client.custom_response
@@ -526,7 +526,7 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 
 class Shop(commands.Cog, name="Shop"):
 	def __init__(self, client):
-		self.client: MyClient = client
+		self.client: Bot = client
 		self.helper = EconomyHelper(client)
 		self.custom_response = custom_response.CustomResponse(client, name="shop")
 
@@ -645,6 +645,6 @@ class Shop(commands.Cog, name="Shop"):
 		await ctx.send("shop.remove.success", item=item)
 
 
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(Economy(client))
 	await client.add_cog(Shop(client))

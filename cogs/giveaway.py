@@ -6,7 +6,7 @@ from typing import Optional
 
 import discord
 import helpers
-from core import Context, MyClient
+from core import Bot, Context
 from discord import app_commands
 from discord.ext import commands
 from helpers import FormatDateTime
@@ -15,7 +15,7 @@ logger = getLogger(__name__)
 
 
 class Giveaway(commands.Cog, name="Giveaway"):
-	def __init__(self, client: MyClient):
+	def __init__(self, client: Bot):
 		self.client = client
 		self.custom_response = client.custom_response
 		self.active_giveaways = {}
@@ -170,5 +170,5 @@ class Giveaway(commands.Cog, name="Giveaway"):
 		await self.end_giveaway(ctx, message_id, ctx.channel.id, True)
 
 
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(Giveaway(client))

@@ -1,12 +1,12 @@
 from typing import Optional
 
-from core import Context, MyClient
+from core import Context, Bot
 from discord import app_commands
 from discord.ext import commands
 
 
 class Setup(commands.Cog, name="Setup"):
-	def __init__(self, client: MyClient):
+	def __init__(self, client: Bot):
 		self.client = client
 
 	@commands.hybrid_command(name="prefix", description="prefix_specs-description")
@@ -24,5 +24,5 @@ class Setup(commands.Cog, name="Setup"):
 		return await ctx.send("setup.prefix.set", prefix=prefix)
 
 
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(Setup(client))

@@ -2,7 +2,7 @@ from typing import Optional
 
 import discord
 from args import Member, User
-from core import Context, MyClient
+from core import Bot, Context
 from discord import app_commands
 from discord.ext import commands
 from helpers import regex
@@ -11,7 +11,7 @@ from helpers import regex
 @app_commands.guild_only()
 @commands.guild_only()
 class AFK(commands.Cog):
-	def __init__(self, client: MyClient):
+	def __init__(self, client: Bot):
 		self.client = client
 		self.custom_response = client.custom_response
 
@@ -133,5 +133,5 @@ class AFK(commands.Cog):
 			return await ctx.send("afk.on")
 
 
-async def setup(client: MyClient):
+async def setup(client: Bot):
 	await client.add_cog(AFK(client))

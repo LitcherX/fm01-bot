@@ -2,11 +2,11 @@ from time import perf_counter
 
 from discord.ext import commands
 
-from core import Context, MyClient
+from core import Context, Bot
 
 
 class Basic(commands.Cog, name="Basic"):
-	def __init__(self, client: MyClient):
+	def __init__(self, client: Bot):
 		self.client = client
 
 	@commands.hybrid_command(name="ping", description="ping_specs-description")
@@ -18,6 +18,10 @@ class Basic(commands.Cog, name="Basic"):
 
 		await ctx.send("ping", latency=float(self.client.latency), db=float(database))
 
+	@commands.command()
+	async def raiseerror(self, ctx: Context):
+		raise Exception("This is a test exception for error handling.")
 
-async def setup(client: MyClient):
+
+async def setup(client: Bot):
 	await client.add_cog(Basic(client))
