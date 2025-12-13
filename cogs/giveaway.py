@@ -98,17 +98,9 @@ class Giveaway(commands.Cog, name="Giveaway"):
 			logger.error(f"Error ending giveaway: {e}")
 			raise e
 
-	@commands.hybrid_group(
-		name="giveaway", description="gw_specs-description", usage="gw_specs-usage", fallback="gw_specs-fallback"
-	)
-	@app_commands.rename(
-		winners="gw_specs-args-winners-name", duration="gw_specs-args-duration-name", prize="gw_specs-args-prize-name"
-	)
-	@app_commands.describe(
-		winners="gw_specs-args-winners-description",
-		duration="gw_specs-args-duration-description",
-		prize="gw_specs-args-prize-description",
-	)
+	@commands.hybrid_group(name="giveaway", description="gw-desc", usage="gw-usage", fallback="gw-fallback")
+	@app_commands.rename(winners="gw-args-winners-name", duration="gw-args-duration-name", prize="gw-args-prize-name")
+	@app_commands.describe(winners="gw-args-winners-desc", duration="gw-args-duration-desc", prize="gw-args-prize-desc")
 	async def giveaway(self, ctx: Context, duration: str, winners: str | None = None, *, prize: str | None = None):
 		try:
 			end_time = datetime.now() + timedelta(seconds=helpers.text_to_seconds(duration))
@@ -154,9 +146,9 @@ class Giveaway(commands.Cog, name="Giveaway"):
 
 		self.client.loop.create_task(self.end_giveaway(ctx, message.id, ctx.channel.id))
 
-	@giveaway.command(name="end", description="gw_end-description", usage="gw_end-usage", aliases=["reroll"])
+	@giveaway.command(name="end", description="gw_end-desc", usage="gw_end-usage", aliases=["reroll"])
 	@app_commands.rename(message="gw_end-args-message_id-name")
-	@app_commands.describe(message="gw_end-args-message_id-description")
+	@app_commands.describe(message="gw_end-args-message_id-desc")
 	@commands.has_permissions(manage_guild=True)
 	async def endgiveaway(self, ctx, message: str):
 		try:

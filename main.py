@@ -19,11 +19,14 @@ except ImportError:
 parser = argparse.ArgumentParser(prog="fm01")
 parser.add_argument("--debug", action="store_true")
 
+client = None
 
-async def main(debug=False) -> None:
+
+async def main(debug) -> None:
 	logger.info("Starting the bot...")
 	load_dotenv()
 
+	global client
 	client = Bot()
 	client.debug = debug
 
@@ -34,12 +37,13 @@ async def main(debug=False) -> None:
 		token = os.getenv("TOKEN")
 		logger.info("Running in production mode")
 
-	if token:
-		await client.start(token)
-	else:
-		logger.error("Token not found")
+	await client.start(token)
 
 
 if __name__ == "__main__":
 	args = parser.parse_args()
-	asyncio.run(main(args.debug))
+	try:
+		asyncio.run(main(args.debug))
+	except KeyboardInterrupt:
+		if client.db:
+			asyncio.run(client.db.close())

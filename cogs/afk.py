@@ -2,7 +2,7 @@ from typing import Optional
 
 import discord
 from args import Member, User
-from core import Bot, Context
+from core import Bot, Context, command
 from discord import app_commands
 from discord.ext import commands
 from helpers import regex
@@ -74,9 +74,7 @@ class AFK(commands.Cog):
 		final_message = "\n".join(afk_lines)
 		await ctx.reply(final_message)
 
-	@commands.hybrid_command(name="afk", description="afk_specs-description", usage="afk_specs-usage")
-	@app_commands.rename(reason="afk_specs-args-reason-name")
-	@app_commands.describe(reason="afk_specs-args-reason-description")
+	@command()
 	async def afk(self, ctx: Context, reason: Optional[str] = None):
 		if not reason:
 			reason = await self.custom_response("afk.dnd", ctx)

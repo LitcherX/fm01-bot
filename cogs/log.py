@@ -23,12 +23,10 @@ class LogCommands(commands.Cog, name="Logging"):
 	def __init__(self, client: Bot) -> None:
 		self.client = client
 
-	@commands.hybrid_group(
-		name="log", fallback="log_specs-fallback", description="log_specs-description", usage="log_specs-usage"
-	)
+	@commands.hybrid_group(name="log", fallback="log-fallback", description="log-desc", usage="log-usage")
 	@commands.has_permissions(manage_guild=True)
-	@app_commands.rename(state="log_specs-args-state-name", channel="log_specs-args-channel-name")
-	@app_commands.describe(state="log_specs-args-state-description", channel="log_specs-args-channel-description")
+	@app_commands.rename(state="log-args-state-name", channel="log-args-channel-name")
+	@app_commands.describe(state="log-args-state-desc", channel="log-args-channel-desc")
 	async def log_toggle(
 		self, ctx: Context, state: Literal["on", "off"] = "on", channel: discord.TextChannel | None = None
 	):
@@ -55,9 +53,9 @@ class LogCommands(commands.Cog, name="Logging"):
 		)
 		await ctx.send(content="log.toggle.on", channel=TextChannel.from_channel(channel))
 
-	@log_toggle.command(name="add", description="logadd_specs-description", usage="logadd_specs-usage")
-	@app_commands.rename(module="logadd_specs-args-module-name")
-	@app_commands.describe(module="logadd_specs-args-module-description")
+	@log_toggle.command(name="add", description="logadd-desc", usage="logadd-usage")
+	@app_commands.rename(module="logadd-args-module-name")
+	@app_commands.describe(module="logadd-args-module-desc")
 	@commands.has_permissions(manage_guild=True)
 	async def log_module_add(self, ctx: Context, module: str):
 		if module == "all":
@@ -69,9 +67,9 @@ class LogCommands(commands.Cog, name="Logging"):
 
 		await ctx.send("log.module.add", module=module)
 
-	@log_toggle.command(name="remove", description="logremove_specs-description", usage="logremove_specs-usage")
-	@app_commands.rename(module="logremove_specs-args-module-name")
-	@app_commands.describe(module="logremove_specs-args-module-description")
+	@log_toggle.command(name="remove", description="logremove-desc", usage="logremove-usage")
+	@app_commands.rename(module="logremove-args-module-name")
+	@app_commands.describe(module="logremove-args-module-desc")
 	@commands.has_permissions(manage_guild=True)
 	async def log_module_remove(self, ctx: Context, module: str):
 		if module == "all":

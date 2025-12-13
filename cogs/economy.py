@@ -256,7 +256,7 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 		self.helper = EconomyHelper(client)
 		self.custom_response = client.custom_response
 
-	@commands.hybrid_command(name="leaderboard", description="leaderboard_specs-description")
+	@commands.hybrid_command(name="leaderboard", description="leaderboard-desc")
 	async def leaderboard(self, ctx: commands.Context):
 		rows = await self.client.db.fetch(
 			"SELECT * FROM economy WHERE guild_id = $1 ORDER BY cash+bank DESC LIMIT 10", ctx.guild.id
@@ -285,7 +285,7 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 
 		await ctx.send(**message)
 
-	@commands.hybrid_command(name="work", description="work_specs-description")
+	@commands.hybrid_command(name="work", description="work-desc")
 	@commands.cooldown(1, 3600, commands.BucketType.user)  # type: ignore
 	async def work(self, ctx: Context):
 		amount: int = random.randint(300, 1500)
@@ -293,14 +293,14 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 
 		await ctx.send("work", amount=amount)
 
-	@commands.hybrid_command(name="crime", description="crime_specs-description")
+	@commands.hybrid_command(name="crime", description="crime-desc")
 	async def crime(self, ctx: Context):
 		amount = random.randint(500, 2000)
 		await self.helper.add_money(ctx.author.id, ctx.guild.id, amount)
 
 		await ctx.send("crime", amount=amount)
 
-	@commands.hybrid_command(name="daily", description="daily_specs-description")
+	@commands.hybrid_command(name="daily", description="daily-desc")
 	@commands.cooldown(1, 86400, commands.BucketType.user)  # type: ignore
 	async def daily(self, ctx: Context):
 		amount = 5000
@@ -310,9 +310,7 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 
 	@app_commands.rename(member="global-member", amount="global-amount", account="global-account")
 	@app_commands.describe(
-		member="addmoney_specs-args-member-description",
-		amount="addmoney_specs-args-amount-description",
-		account="addmoney_specs-args-account-description",
+		member="addmoney-args-member-desc", amount="addmoney-args-amount-desc", account="addmoney-args-account-desc"
 	)
 	@app_commands.choices(
 		account=[
@@ -320,7 +318,7 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 			app_commands.Choice(name="global-bank", value="bank"),
 		]
 	)
-	@commands.hybrid_command(name="addmoney", description="addmoney_specs-description", usage="addmoney_specs-usage")
+	@commands.hybrid_command(name="addmoney", description="addmoney-desc", usage="addmoney-usage")
 	@app_commands.checks.has_permissions(administrator=True)
 	@commands.has_permissions(administrator=True)
 	async def addmoney(
@@ -339,9 +337,9 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 
 	@app_commands.rename(member="global-member", amount="global-amount", account="global-account")
 	@app_commands.describe(
-		member="removemoney_specs-args-member-description",
-		amount="removemoney_specs-args-amount-description",
-		account="removemoney_specs-args-account-description",
+		member="removemoney-args-member-desc",
+		amount="removemoney-args-amount-desc",
+		account="removemoney-args-account-desc",
 	)
 	@app_commands.choices(
 		account=[
@@ -349,9 +347,7 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 			app_commands.Choice(name="global-bank", value="bank"),
 		]
 	)
-	@commands.hybrid_command(
-		name="removemoney", description="removemoney_specs-description", usage="removemoney_specs-usage"
-	)
+	@commands.hybrid_command(name="removemoney", description="removemoney-desc", usage="removemoney-usage")
 	@app_commands.checks.has_permissions(administrator=True)
 	@commands.has_permissions(administrator=True)
 	async def removemoney(
@@ -371,7 +367,7 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 		else:
 			await ctx.send("removemoney.errors.positive")
 
-	@commands.hybrid_command(name="luck", description="luck_specs-description")
+	@commands.hybrid_command(name="luck", description="luck-desc")
 	@commands.cooldown(1, 3600, commands.BucketType.user)  # type: ignore
 	async def luck(self, ctx: Context):
 		balance = await self.helper.get_balance(ctx.author.id, ctx.guild.id)
@@ -392,8 +388,8 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 			await ctx.send("luck.lose", amount=amount)
 
 	@app_commands.rename(member="global-member", amount="global-amount")
-	@app_commands.describe(member="pay_specs-args-member-description", amount="pay_specs-args-amount-description")
-	@commands.hybrid_command(name="pay", description="pay_specs-description", usage="pay_specs-usage")
+	@app_commands.describe(member="pay-args-member-desc", amount="pay-args-amount-desc")
+	@commands.hybrid_command(name="pay", description="pay-desc", usage="pay-usage")
 	async def pay(self, ctx: Context, member: discord.Member, amount: discord.app_commands.Range[int, 1]):
 		if amount < 1:
 			await ctx.send("pay.errors.positive")
@@ -413,10 +409,8 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 		await ctx.send("pay.success", amount=amount, member=member)
 
 	@app_commands.rename(member="global-member")
-	@app_commands.describe(member="balance_specs-args-member-description")
-	@commands.hybrid_command(
-		name="balance", description="balance_specs-description", usage="balance_specs-usage", aliases=["bal"]
-	)
+	@app_commands.describe(member="balance-args-member-desc")
+	@commands.hybrid_command(name="balance", description="balance-desc", usage="balance-usage", aliases=["bal"])
 	async def balance(self, ctx: Context, member: Optional[discord.Member]):
 		member = member or ctx.author
 		cash, bank = await self.helper.get_balance(member.id, ctx.guild.id, wallet=None)
@@ -431,9 +425,9 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 
 		await ctx.send(**message)
 
-	@app_commands.rename(bet="slots_specs-args-bet-name")
-	@app_commands.describe(bet="slots_specs-args-bet-description")
-	@commands.hybrid_command(name="slots", description="slots_specs-description", usage="slots_specs-usage")
+	@app_commands.rename(bet="slots-args-bet-name")
+	@app_commands.describe(bet="slots-args-bet-desc")
+	@commands.hybrid_command(name="slots", description="slots-desc", usage="slots-usage")
 	@commands.cooldown(1, 3600, commands.BucketType.user)  # type: ignore
 	async def slots(self, ctx: Context, bet: int):
 		balance = await self.helper.get_balance(ctx.author.id, ctx.guild.id)
@@ -468,8 +462,8 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 			await ctx.send(**message)
 
 	@app_commands.rename(amount="global-amount")
-	@app_commands.describe(amount="deposit_specs-args-amount-description")
-	@commands.hybrid_command(name="deposit", description="deposit_specs-description", usage="deposit_specs-usage")
+	@app_commands.describe(amount="deposit-args-amount-desc")
+	@commands.hybrid_command(name="deposit", description="deposit-desc", usage="deposit-usage")
 	async def deposit(self, ctx: Context, amount: discord.app_commands.Range[int, 1] | None = None):
 		cash, bank = await self.helper.get_balance(ctx.author.id, ctx.guild.id, wallet=None)
 		amount = amount or cash
@@ -496,8 +490,8 @@ class Economy(commands.GroupCog, name="Economy", group_name="economy"):
 		await ctx.send("deposit.success", amount=amount)
 
 	@app_commands.rename(amount="global-amount")
-	@app_commands.describe(amount="withdraw_specs-args-amount-description")
-	@commands.hybrid_command(name="withdraw", description="withdraw_specs-description", usage="withdraw_specs-usage")
+	@app_commands.describe(amount="withdraw-args-amount-desc")
+	@commands.hybrid_command(name="withdraw", description="withdraw-desc", usage="withdraw-usage")
 	async def withdraw(self, ctx: Context, amount: discord.app_commands.Range[int, 1] | None = None):
 		cash, bank = await self.helper.get_balance(ctx.author.id, ctx.guild.id, wallet=None)
 		amount = amount or bank
@@ -530,7 +524,7 @@ class Shop(commands.Cog, name="Shop"):
 		self.helper = EconomyHelper(client)
 		self.custom_response = custom_response.CustomResponse(client, name="shop")
 
-	@commands.hybrid_group(name="shop", description="shop_specs-description", fallback="shop_specs-fallback")
+	@commands.hybrid_group(name="shop", description="shop-desc", fallback="shop-fallback")
 	async def shop(self, ctx: Context):
 		row = await self.client.db.fetch("SELECT * FROM shop WHERE guild_id = $1", str(ctx.guild.id))
 		if not row:
@@ -554,9 +548,9 @@ class Shop(commands.Cog, name="Shop"):
 
 		await ctx.send(**message)
 
-	@shop.command(name="buy", description="buy_specs-description", usage="buy_specs-usage")
-	@app_commands.rename(item_name="buy_specs-args-item-name")
-	@app_commands.describe(item_name="buy_specs-args-item-description")
+	@shop.command(name="buy", description="buy-desc", usage="buy-usage")
+	@app_commands.rename(item_name="buy-args-item-name")
+	@app_commands.describe(item_name="buy-args-item-desc")
 	async def buy(self, ctx: Context, item_name: str):
 		row = await self.client.db.fetchrow(
 			"SELECT * FROM shop WHERE guild_id = $1 AND LOWER(item_name) = $2", ctx.guild.id, item_name.lower()
@@ -580,15 +574,15 @@ class Shop(commands.Cog, name="Shop"):
 
 		await ctx.send("shop.buy.success", item=item)
 
-	@shop.command(name="set_item", description="set_item_specs-description", usage="set_item_specs-usage")
+	@shop.command(name="set_item", description="set_item-desc", usage="set_item-usage")
 	@app_commands.rename(
 		item_name="global-item", price="global-price", role="global-role", description="global-description"
 	)
 	@app_commands.describe(
-		item_name="set_item_specs-args-item-description",
-		price="set_item_specs-args-price-description",
-		role="set_item_specs-args-role-description",
-		description="set_item_specs-args-description-description",
+		item_name="set_item-args-item-desc",
+		price="set_item-args-price-desc",
+		role="set_item-args-role-desc",
+		description="set_item-args-description-desc",
 	)
 	@app_commands.checks.has_permissions(manage_guild=True, manage_roles=True)
 	@commands.has_permissions(manage_guild=True, manage_roles=True)
@@ -622,9 +616,9 @@ class Shop(commands.Cog, name="Shop"):
 		item = ShopItem(item_name, price, description, role)
 		await ctx.send("shop.set.success", item=item)
 
-	@shop.command(name="remove_item", description="remove_item_specs-description", usage="remove_item_specs-usage")
+	@shop.command(name="remove_item", description="remove_item-desc", usage="remove_item-usage")
 	@app_commands.rename(item_name="global-item")
-	@app_commands.describe(item_name="remove_item_specs-args-item-description")
+	@app_commands.describe(item_name="remove_item-args-item-desc")
 	@app_commands.checks.has_permissions(manage_guild=True)
 	async def remove_item(self, ctx: Context, item_name: str):
 		row = await self.client.db.fetchrow(

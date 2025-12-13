@@ -4,6 +4,7 @@ import json
 import os
 import socket
 import traceback
+from io import StringIO
 from logging import getLogger
 from pathlib import Path
 from time import perf_counter
@@ -12,18 +13,18 @@ from typing import Any, Optional, Union
 import aiohttp
 import asyncpg
 import discord
-from core import Command, Context, SlashCommandLocalizer, slash_command_localization, update_slash_localizations
 from discord import app_commands
 from discord.ext import commands, localization
 from helpers import custom_response, seconds_to_text
 from helpers.emojis import LOADING
-from io import StringIO
+
+from core import Command, Context, SlashCommandLocalizer, slash_command_localization, update_slash_localizations
 
 
 class Bot(commands.AutoShardedBot):
 	def __init__(self):
 		update_slash_localizations()
-		self.debug = True
+		self.debug: bool = True
 		self.logger = getLogger(__name__)
 		self.uptime: Optional[datetime.datetime] = None
 		self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
@@ -43,7 +44,7 @@ class Bot(commands.AutoShardedBot):
 			intents=intents,
 			case_insensitive=False,
 			activity=discord.CustomActivity(name="Bot starting...", emoji="🟡"),
-			status=discord.Status.idle,
+			status=discord.Status.idle,  # type: ignore
 			chunk_guilds_at_startup=False,
 			member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
 			max_messages=20000,
@@ -54,8 +55,11 @@ class Bot(commands.AutoShardedBot):
 		self.custom_response = custom_response.CustomResponse(self)
 
 	async def request(self, url: str):
-		async with self.session.get(url) as response:
-			return await response.json()
+		if self.session:
+			async with self.session.get(url) as response:
+				return await response.json()
+		else:
+			return {"error": 400}
 
 	async def get_prefix(self, message: discord.Message) -> Union[str, list[str]]:
 		if self.debug:
@@ -81,7 +85,11 @@ class Bot(commands.AutoShardedBot):
 		self.logger.info("Running initial setup hook...")
 		benchmark = perf_counter()
 
-		await self.database_initialization()
+		try:
+			await self.database_initialization()
+		except asyncpg.InvalidAuthorizationSpecificationError as e:
+			self.logger.error("Failed to connect to database", exc_info=e)
+			exit(-1)
 		await self.first_time_database()
 		await self.load_cogs()
 		await self.tree.set_translator(SlashCommandLocalizer())
@@ -100,7 +108,7 @@ class Bot(commands.AutoShardedBot):
 		self.logger.info("Connecting to database...")
 		benchmark = perf_counter()
 		# Connects to database
-		self.db = await asyncpg.create_pool(
+		self.db = await asyncpg.create_pool(  # type: ignore
 			host=os.getenv("DB_HOST"),
 			database="lumin_beta",
 			# ! Replace with default database name when ran for the first time
@@ -193,32 +201,31 @@ class Bot(commands.AutoShardedBot):
 
 		match error:
 			case commands.MissingRequiredArgument():
-				error: commands.MissingRequiredArgument
-				name = slash_command_localization(error.param.name, ctx)
+				if slash_command_localization:
+					name = slash_command_localization(error.param.name, ctx)
+				else:
+					name = ctx.command.name
 				parameter = f"[{name if error.param.required else f'({name})'}]"
 
 				await ctx.send("errors.missing_required_argument", command=command, parameter=parameter)
 			case commands.BotMissingPermissions() | app_commands.BotMissingPermissions():
-				error: commands.BotMissingPermissions
-				permissions = [
+				permissions: list[str] = [
 					(await self.custom_response(f"permissions.{permission}", ctx))
 					for permission in error.missing_permissions
-				]
+				]  # type: ignore
 
 				await ctx.send("errors.bot_missing_permissions", command=command, permissions=", ".join(permissions))
 			case commands.BadArgument():
 				await ctx.send("errors.bad_argument", command=command)
 				raise error
 			case commands.MissingPermissions() | app_commands.MissingPermissions():
-				error: commands.MissingPermissions
-				permissions = [
+				permissions: list[str] = [
 					(await self.custom_response(f"permissions.{permission}", ctx))
 					for permission in error.missing_permissions
-				]
+				]  # type: ignore
 
 				await ctx.send("errors.missing_permissions", command=command, permissions=", ".join(permissions))
 			case commands.CommandOnCooldown():
-				error: commands.CommandOnCooldown
 				retry_after = seconds_to_text(int(error.retry_after))
 				await ctx.send("errors.command_on_cooldown", command=command, retry_after=retry_after)
 			case commands.ChannelNotFound():
@@ -237,67 +244,57 @@ class Bot(commands.AutoShardedBot):
 				await ctx.send("errors.not_owner", command=command)
 			case commands.CommandNotFound() | app_commands.CommandNotFound():
 				return
-			case discord.RateLimited():
-				channel: discord.TextChannel = await self.fetch_channel(1268260404677574697)
-				webhook: discord.Webhook | None = discord.utils.get(
-					await channel.webhooks(), name=f"{self.user.display_name} Rate Limit"
-				)
-				if not webhook:
-					webhook = await channel.create_webhook(name=f"{self.user.display_name} Rate Limit")
-				await webhook.send(
-					content=f"# ⚠️ RATE LIMIT\n**Guild:** {ctx.guild.name} / {ctx.guild.id}\n**User:** {ctx.author} / {ctx.author.id}\n**Command:** {ctx.command} {'- failed' if ctx.command_failed else ''}\n**Error:** {error}"
-				)
-				raise error
 			case _:
 				# if the error is unknown, log it
-				channel: discord.TextChannel = (
+				channel = (
 					ctx.channel if self.debug and ctx and ctx.channel else await self.fetch_channel(1268260404677574697)
 				)
 
-				# show original error for chained exceptions
-				root_exc = None
-				if getattr(error, "__cause__"):
-					root_exc = error.__cause__
-				elif getattr(error, "__context__") and not getattr(error, "__suppress_context__"):
-					root_exc = error.__context__
-				if root_exc:
-					stack = "".join(traceback.format_exception(type(root_exc), root_exc, root_exc.__traceback__))
-				else:
-					stack = "".join(traceback.format_exception(type(error), error, error.__traceback__))
-				for marker in (
-					"The above exception was the direct cause of the following exception:",
-					"During handling of the above exception, another exception occurred:",
-				):
-					if marker in stack:
-						stack = stack.split(marker)[0].rstrip()
-						break
+				if channel:
+					# show original error for chained exceptions
+					root_exc = None
+					if getattr(error, "__cause__"):
+						root_exc = error.__cause__
+					elif getattr(error, "__context__") and not getattr(error, "__suppress_context__"):
+						root_exc = error.__context__
+					if root_exc:
+						stack = "".join(traceback.format_exception(type(root_exc), root_exc, root_exc.__traceback__))
+					else:
+						stack = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+					for marker in (
+						"The above exception was the direct cause of the following exception:",
+						"During handling of the above exception, another exception occurred:",
+					):
+						if marker in stack:
+							stack = stack.split(marker)[0].rstrip()
+							break
 
-				# if stack is more than 1700 characters, make it a file
-				too_long = len(stack) > 1700
-				file: discord.File | None = None
-				if too_long:
-					string_io = StringIO()
-					with string_io as f:
-						f.write(stack)
-					file = discord.File(fp=string_io, filename="error.txt")
-					stack = "The stack trace was too long to send in a message, so it was saved as a file."
-				webhook = discord.utils.get(await channel.webhooks(), name=f"{self.user.display_name} Errors")
-				if not webhook:
-					webhook = await channel.create_webhook(
-						name=f"{self.user.display_name} Errors", avatar=await ctx.me.avatar.read()
+					# if stack is more than 1700 characters, make it a file
+					too_long = len(stack) > 1700
+					file: discord.File | None = None
+					if too_long:
+						s = StringIO()
+						s.write(stack)
+						s.seek(0)
+						file = discord.File(s, filename="error.txt")
+						stack = "The stack trace was too long to send in a message, so it was saved as a file."
+					webhook = discord.utils.get(await channel.webhooks(), name=f"{self.user.display_name} Errors")
+					if not webhook:
+						webhook = await channel.create_webhook(
+							name=f"{self.user.display_name} Errors", avatar=await ctx.me.avatar.read()
+						)
+					await webhook.send(
+						content=f"**ID:** {ctx.message.id}\n"
+						f"**Guild:** {ctx.guild.name if ctx.guild else 'DMs'} / {ctx.guild.id if ctx.guild else 0}\n"
+						f"**User:** {ctx.author} / {ctx.author.id}\n"
+						f"**Command:** {ctx.command}\n"
+						f"```{stack}```",
+						file=file if too_long and file else discord.abc.MISSING,
 					)
-				await webhook.send(
-					content=f"**ID:** {ctx.message.id}\n"
-					f"**Guild:** {ctx.guild.name if ctx.guild else 'DMs'} / {ctx.guild.id if ctx.guild else 0}\n"
-					f"**User:** {ctx.author} / {ctx.author.id}\n"
-					f"**Command:** {ctx.command}\n"
-					f"```{stack}```",
-					file=file if too_long and file else discord.abc.MISSING,
-				)
-				await ctx.reply(
-					f"An error has occured and has been reported to the developers. Report ID: `{ctx.message.id}`",
-					mention_author=False,
-				)
+					await ctx.reply(
+						content=f"An error has occured and has been reported to the developers. Report ID: `{ctx.message.id}`",
+						mention_author=False,
+					)
 				raise error
 
 	async def on_command_error(self, ctx: Context, error: discord.errors.DiscordException):
@@ -308,13 +305,13 @@ class Bot(commands.AutoShardedBot):
 
 	async def before_invoke(self, ctx: Context):
 		if ctx.guild:
-			is_set_up = await self.db.fetchrow("SELECT * FROM guilds WHERE guild_id = $1", ctx.guild.id)
+			is_set_up: bool = await self.db.fetchrow("SELECT * FROM guilds WHERE guild_id = $1", ctx.guild.id)
 			if not is_set_up:
 				await self.db.execute("INSERT INTO guilds (guild_id) VALUES ($1)", ctx.guild.id)
 		try:
 			# Signals that the bot is still thinking / performing a task
 			if ctx.interaction and ctx.interaction.type == discord.InteractionType.application_command:
-				await ctx.interaction.response.defer(thinking=True)
+				await ctx.interaction.response.defer(thinking=True)  # type: ignore
 			else:
 				await ctx.message.add_reaction(LOADING)
 		except discord.HTTPException:

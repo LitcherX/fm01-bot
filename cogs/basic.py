@@ -1,15 +1,15 @@
 from time import perf_counter
 
+from core import Bot, Context
+from core.hybrid_command import command
 from discord.ext import commands
-
-from core import Context, Bot
 
 
 class Basic(commands.Cog, name="Basic"):
 	def __init__(self, client: Bot):
 		self.client = client
 
-	@commands.hybrid_command(name="ping", description="ping_specs-description")
+	@command()
 	async def ping(self, ctx: Context):
 		# Database ping calculation
 		database_start = perf_counter()
@@ -18,9 +18,9 @@ class Basic(commands.Cog, name="Basic"):
 
 		await ctx.send("ping", latency=float(self.client.latency), db=float(database))
 
-	@commands.command()
-	async def raiseerror(self, ctx: Context):
-		raise Exception("This is a test exception for error handling.")
+	@command()
+	async def test(self, ctx: Context, param: str):
+		await ctx.send(content=f"test {param}")
 
 
 async def setup(client: Bot):

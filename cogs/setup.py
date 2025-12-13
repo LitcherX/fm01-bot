@@ -9,12 +9,10 @@ class Setup(commands.Cog, name="Setup"):
 	def __init__(self, client: Bot):
 		self.client = client
 
-	@commands.hybrid_command(name="prefix", description="prefix_specs-description")
+	@commands.hybrid_command(name="prefix", description="prefix-desc")
 	@commands.has_permissions(administrator=True)
-	@app_commands.rename(prefix="prefix_specs-args-prefix-name", mention="prefix_specs-args-mention-name")
-	@app_commands.describe(
-		prefix="prefix_specs-args-prefix-description", mention="prefix_specs-args-mention-description"
-	)
+	@app_commands.rename(prefix="prefix-args-prefix-name", mention="prefix-args-mention-name")
+	@app_commands.describe(prefix="prefix-args-prefix-desc", mention="prefix-args-mention-desc")
 	async def prefix(self, ctx: Context, prefix: str, mention: Optional[bool] = True):
 		if len(prefix) > 10:
 			return await ctx.send("setup.prefix.errors.long", prefix=prefix, limit=10)

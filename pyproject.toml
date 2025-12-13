@@ -27,6 +27,7 @@ dependencies = [
     "pillow>=11.3.0",
     "asyncpraw>=7.8.1",
     "pytemperature>=1.1",
+    "ty>=0.0.1a33",
 ]
 
 [dependency-groups]

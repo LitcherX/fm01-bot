@@ -312,9 +312,7 @@ class Snapshot(commands.Cog, name="Snapshots"):
 				except (discord.Forbidden, discord.HTTPException):
 					continue
 
-	@commands.hybrid_group(
-		name="snapshot", description="snapshot_specs-description", fallback="snapshot_specs-fallback"
-	)
+	@commands.hybrid_group(name="snapshot", description="snapshot-desc", fallback="snapshot-fallback")
 	@app_commands.checks.has_permissions(administrator=True)
 	@commands.has_permissions(administrator=True)
 	async def snapshot(self, ctx: Context):
@@ -322,9 +320,9 @@ class Snapshot(commands.Cog, name="Snapshots"):
 
 		await ctx.send("snapshot.create", code=code)
 
-	@snapshot.command(name="load", description="ss_load_specs-description")
-	@app_commands.describe(code="ss_load_specs-args-code-description")
-	@app_commands.rename(code="ss_load_specs-args-code-name")
+	@snapshot.command(name="load", description="ss_load-desc")
+	@app_commands.describe(code="ss_load-args-code-desc")
+	@app_commands.rename(code="ss_load-args-code-name")
 	@app_commands.checks.has_permissions(administrator=True)
 	@commands.has_permissions(administrator=True)
 	async def load(self, ctx: Context, code: str):

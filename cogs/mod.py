@@ -595,16 +595,12 @@ class Moderation(commands.GroupCog, name="Moderation", group_name="mod"):
 	async def cog_load(self):
 		self.client.loop.create_task(self.case_removal())
 
-	@commands.hybrid_command(name="warn", description="warn_specs-description", usage="warn_specs-usage")
+	@commands.hybrid_command(name="warn", description="warn-desc", usage="warn-usage")
 	@app_commands.rename(
-		user="warn_specs-args-member-name",
-		expires="warn_specs-args-duration-name",
-		reason="warn_specs-args-reason-name",
+		user="warn-args-member-name", expires="warn-args-duration-name", reason="warn-args-reason-name"
 	)
 	@app_commands.describe(
-		user="warn_specs-args-member-description",
-		expires="warn_specs-args-duration-description",
-		reason="warn_specs-args-reason-description",
+		user="warn-args-member-desc", expires="warn-args-duration-desc", reason="warn-args-reason-desc"
 	)
 	@app_commands.checks.has_permissions(moderate_members=True)
 	@commands.has_permissions(moderate_members=True)
@@ -649,15 +645,9 @@ class Moderation(commands.GroupCog, name="Moderation", group_name="mod"):
 
 	@commands.bot_has_permissions(moderate_members=True)
 	@app_commands.checks.bot_has_permissions(moderate_members=True)
-	@commands.hybrid_command(name="mute", description="mute_specs-description", usage="mute_specs-usage")
-	@app_commands.rename(
-		user="mute_specs-args-user-name", expires="mute_specs-args-expires-name", reason="mute_specs-args-reason-name"
-	)
-	@app_commands.describe(
-		user="mute_specs-args-user-description",
-		expires="mute_specs-args-expires-description",
-		reason="mute_specs-args-reason-description",
-	)
+	@commands.hybrid_command(name="mute", description="mute-desc", usage="mute-usage")
+	@app_commands.rename(user="mute-args-user-name", expires="mute-args-expires-name", reason="mute-args-reason-name")
+	@app_commands.describe(user="mute-args-user-desc", expires="mute-args-expires-desc", reason="mute-args-reason-desc")
 	@app_commands.checks.has_permissions(moderate_members=True)
 	@commands.has_permissions(moderate_members=True)
 	async def mute(self, ctx: Context, user: discord.Member, expires: str, *, reason: str = None):
@@ -683,9 +673,9 @@ class Moderation(commands.GroupCog, name="Moderation", group_name="mod"):
 
 	@commands.bot_has_permissions(moderate_members=True)
 	@app_commands.checks.bot_has_permissions(moderate_members=True)
-	@commands.hybrid_command(name="unmute", description="unmute_specs-description", usage="unmute_specs-usage")
-	@app_commands.rename(user="unmute_specs-args-user-name")
-	@app_commands.describe(user="unmute_specs-args-user-description")
+	@commands.hybrid_command(name="unmute", description="unmute-desc", usage="unmute-usage")
+	@app_commands.rename(user="unmute-args-user-name")
+	@app_commands.describe(user="unmute-args-user-desc")
 	@app_commands.checks.has_permissions(moderate_members=True)
 	@commands.has_permissions(moderate_members=True)
 	async def unmute(self, ctx: Context, user: discord.Member):
@@ -708,9 +698,9 @@ class Moderation(commands.GroupCog, name="Moderation", group_name="mod"):
 
 	@commands.bot_has_permissions(kick_members=True)
 	@app_commands.checks.bot_has_permissions(kick_members=True)
-	@commands.hybrid_command(name="kick", description="kick_specs-description", usage="kick_specs-usage")
-	@app_commands.rename(user="kick_specs-args-user-name", reason="kick_specs-args-reason-name")
-	@app_commands.describe(user="kick_specs-args-user-description", reason="kick_specs-args-reason-description")
+	@commands.hybrid_command(name="kick", description="kick-desc", usage="kick-usage")
+	@app_commands.rename(user="kick-args-user-name", reason="kick-args-reason-name")
+	@app_commands.describe(user="kick-args-user-desc", reason="kick-args-reason-desc")
 	@app_commands.checks.has_permissions(kick_members=True)
 	@commands.has_permissions(kick_members=True)
 	async def kick(self, ctx: Context, user: discord.Member, *, reason: str = None):
@@ -731,15 +721,9 @@ class Moderation(commands.GroupCog, name="Moderation", group_name="mod"):
 
 	@commands.bot_has_permissions(ban_members=True)
 	@app_commands.checks.bot_has_permissions(ban_members=True)
-	@commands.hybrid_command(name="ban", description="ban_specs-description", usage="ban_specs-usage")
-	@app_commands.rename(
-		user="ban_specs-args-user-name", reason="ban_specs-args-reason-name", expires="ban_specs-args-expires-name"
-	)
-	@app_commands.describe(
-		user="ban_specs-args-user-description",
-		reason="ban_specs-args-reason-description",
-		expires="ban_specs-args-expires-description",
-	)
+	@commands.hybrid_command(name="ban", description="ban-desc", usage="ban-usage")
+	@app_commands.rename(user="ban-args-user-name", reason="ban-args-reason-name", expires="ban-args-expires-name")
+	@app_commands.describe(user="ban-args-user-desc", reason="ban-args-reason-desc", expires="ban-args-expires-desc")
 	@app_commands.checks.has_permissions(ban_members=True)
 	@commands.has_permissions(ban_members=True)
 	async def ban(self, ctx: Context, user: discord.User, expires: str = None, *, reason: str = None):
@@ -767,9 +751,9 @@ class Moderation(commands.GroupCog, name="Moderation", group_name="mod"):
 
 	@commands.bot_has_permissions(ban_members=True)
 	@app_commands.checks.bot_has_permissions(ban_members=True)
-	@commands.hybrid_command(name="unban", description="unban_specs-description", usage="unban_specs-usage")
-	@app_commands.rename(user="unban_specs-args-user-name")
-	@app_commands.describe(user="unban_specs-args-user-description")
+	@commands.hybrid_command(name="unban", description="unban-desc", usage="unban-usage")
+	@app_commands.rename(user="unban-args-user-name")
+	@app_commands.describe(user="unban-args-user-desc")
 	@app_commands.checks.has_permissions(ban_members=True)
 	@commands.has_permissions(ban_members=True)
 	async def unban(self, ctx: Context, user: discord.User):
@@ -790,9 +774,9 @@ class Moderation(commands.GroupCog, name="Moderation", group_name="mod"):
 	@app_commands.checks.bot_has_permissions(manage_channels=True)
 	@commands.has_permissions(manage_channels=True)
 	@app_commands.checks.has_permissions(manage_channels=True)
-	@commands.hybrid_command(name="slowmode", description="sm_specs-description", usage="sm_specs-usage")
-	@app_commands.describe(duration="sm_specs-args-duration-description", channel="sm_specs-args-channel-description")
-	@app_commands.rename(duration="sm_specs-args-duration-name", channel="sm_specs-args-channel-name")
+	@commands.hybrid_command(name="slowmode", description="sm-desc", usage="sm-usage")
+	@app_commands.describe(duration="sm-args-duration-desc", channel="sm-args-channel-desc")
+	@app_commands.rename(duration="sm-args-duration-name", channel="sm-args-channel-name")
 	async def slowmode(self, ctx: Context, duration: str = None, channel: discord.TextChannel = None):
 		if not duration:
 			await ctx.send("mod.slowmode.current_slowmode", channel=TextChannel.from_channel(ctx.channel))
@@ -827,13 +811,10 @@ class Cases(commands.Cog, name="Cases"):
 		self.custom_response = custom_response.CustomResponse(client, "mod")
 
 	@commands.hybrid_group(
-		name="case",
-		description="caseinfo_specs-description",
-		usage="caseinfo_specs-usage",
-		fallback="caseinfo_specs-fallback",
+		name="case", description="caseinfo-desc", usage="caseinfo-usage", fallback="caseinfo-fallback"
 	)
-	@app_commands.rename(case_id="caseinfo_specs-args-case_id-name")
-	@app_commands.describe(case_id="caseinfo_specs-args-case_id-description")
+	@app_commands.rename(case_id="caseinfo-args-case_id-name")
+	@app_commands.describe(case_id="caseinfo-args-case_id-desc")
 	async def case(self, ctx: Context, case_id: str):
 		try:
 			case_id = int(case_id)
@@ -854,11 +835,9 @@ class Cases(commands.Cog, name="Cases"):
 
 	@commands.bot_has_permissions(moderate_members=True, ban_members=True)
 	@app_commands.checks.bot_has_permissions(moderate_members=True, ban_members=True)
-	@case.command(
-		name="delete", description="casedel_specs-description", usage="casedel_specs-usage", aliases=["del", "remove"]
-	)
-	@app_commands.describe(case_id="casedel_specs-args-case_id-description")
-	@app_commands.rename(case_id="casedel_specs-args-case_id-name")
+	@case.command(name="delete", description="casedel-desc", usage="casedel-usage", aliases=["del", "remove"])
+	@app_commands.describe(case_id="casedel-args-case_id-desc")
+	@app_commands.rename(case_id="casedel-args-case_id-name")
 	@app_commands.checks.has_permissions(moderate_members=True)
 	@commands.has_permissions(moderate_members=True)
 	async def delete(self, ctx: Context, case_id: str):
@@ -889,22 +868,18 @@ class Cases(commands.Cog, name="Cases"):
 
 	@commands.bot_has_permissions(moderate_members=True, ban_members=True)
 	@app_commands.checks.bot_has_permissions(moderate_members=True, ban_members=True)
-	@case.command(name="edit", description="caseedit_specs-description", usage="caseedit_specs-usage")
+	@case.command(name="edit", description="caseedit-desc", usage="caseedit-usage")
 	@app_commands.rename(
-		case_id="caseedit_specs-args-case_id-name",
-		value="caseedit_specs-args-value-name",
-		new_value="caseedit_specs-args-nvalue-name",
+		case_id="caseedit-args-case_id-name", value="caseedit-args-value-name", new_value="caseedit-args-nvalue-name"
 	)
 	@app_commands.describe(
-		case_id="caseedit_specs-args-case_id-description",
-		value="caseedit_specs-args-value-description",
-		new_value="caseedit_specs-args-nvalue-description",
+		case_id="caseedit-args-case_id-desc", value="caseedit-args-value-desc", new_value="caseedit-args-nvalue-desc"
 	)
 	@app_commands.choices(
 		value=[
-			app_commands.Choice(name="caseedit_specs-args-value-expires", value="expires"),
-			app_commands.Choice(name="caseedit_specs-args-value-reason", value="reason"),
-			app_commands.Choice(name="caseedit_specs-args-value-message", value="message"),
+			app_commands.Choice(name="caseedit-args-value-expires", value="expires"),
+			app_commands.Choice(name="caseedit-args-value-reason", value="reason"),
+			app_commands.Choice(name="caseedit-args-value-message", value="message"),
 		]
 	)
 	@app_commands.checks.has_permissions(moderate_members=True)
@@ -932,9 +907,9 @@ class Cases(commands.Cog, name="Cases"):
 
 		await ctx.send("mod.edit.response", case=case)
 
-	@case.command(name="list", description="caselist_specs-description", usage="caselist_specs-usage")
-	@app_commands.describe(user="caselist_specs-args-user-description")
-	@app_commands.rename(user="caselist_specs-args-user-name")
+	@case.command(name="list", description="caselist-desc", usage="caselist-usage")
+	@app_commands.describe(user="caselist-args-user-desc")
+	@app_commands.rename(user="caselist-args-user-name")
 	async def list(self, ctx: Context, user: discord.Member = None):
 		user = user or ctx.author
 

@@ -42,9 +42,20 @@ class SlashCommandLocalizer(app_commands.Translator):
 		self, string: app_commands.locale_str, locale: discord.Locale, context: app_commands.TranslationContext
 	) -> str | None:
 		if slash_command_localization:
+			if str(locale).startswith("en"):
+				# we hate subcultures don't differentiate
+				# between american and british english
+				locale = "en"
 			localized = slash_command_localization.translate(string.message, str(locale))
 			if not isinstance(localized, str):
 				return None
+
+			# If localization failed (returned the key unchanged), sanitize it
+			if localized == string.message:
+				# Replace dots with underscores and truncate to 32 characters
+				sanitized = localized.replace(".", "_")[:32]
+				return sanitized
+
 			return localized
 		return None
 

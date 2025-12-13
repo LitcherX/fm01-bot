@@ -12,7 +12,9 @@ from typing import TYPE_CHECKING, Any, Optional, Union, overload
 
 import discord
 from args import Emoji, FormatDateTime, Guild, Member, PartialEmoji, Role, User
+from core.context import Context
 from discord.ext import commands, localization
+
 from helpers import emojis
 
 if TYPE_CHECKING:
@@ -122,7 +124,7 @@ class CustomResponse:
 	async def get_message(
 		self,
 		name: str,
-		locale: Union[str, discord.Locale, discord.Guild, discord.Interaction, commands.Context],
+		locale: Union[str, discord.Locale, discord.Guild, discord.Interaction, commands.Context, Context],
 		*,
 		convert_embeds: bool = True,
 		**kwargs: Any,
@@ -133,7 +135,7 @@ class CustomResponse:
 		----------
 		name: str
 			The name of the message.
-		locale: Union[str, discord.Locale, discord.Guild, discord.Interaction, commands.Context]
+		locale: Union[str, discord.Locale, discord.Guild, discord.Interaction, commands.Context, Context]
 			The locale to use or the context to derive it.
 		convert_embeds: bool
 		    Whether to convert the embeds in the message to discord.Embeds.
