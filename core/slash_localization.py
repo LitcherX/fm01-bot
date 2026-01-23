@@ -39,36 +39,20 @@ class SlashCommandLocalizer(app_commands.Translator):
 	"""
 
 	async def translate(
-		self, string: app_commands.locale_str, locale: discord.Locale, context: app_commands.TranslationContext
+		self, string: app_commands.locale_str, locale: discord.Locale | str, context: app_commands.TranslationContext
 	) -> str | None:
 		if slash_command_localization:
 			if str(locale).startswith("en"):
-				# we hate subcultures don't differentiate
+				# we hate subcultures and don't differentiate
 				# between american and british english
 				locale = "en"
-			localized = slash_command_localization.translate(string.message, str(locale))
+			key = string.extras.get("key") or string.extras.get("l10n_key") or string.message
+			localized = slash_command_localization.translate(key, str(locale))
 			if not isinstance(localized, str):
 				return None
 
-			# If localization failed (returned the key unchanged), sanitize it
-			if localized == string.message:
-				# Replace dots with underscores and truncate to 32 characters
-				sanitized = localized.replace(".", "_")[:32]
-				return sanitized
+			if localized == key:
+				return None
 
 			return localized
 		return None
-
-	async def unload(self) -> None:
-		benchmark = perf_counter()
-		logger.info("Unloading Slash Localizer...")
-		await super().unload()
-		end = perf_counter() - benchmark
-		logger.info(f"Unloaded Slash Localizer in {end:.2f}s")
-
-	async def load(self) -> None:
-		benchmark = perf_counter()
-		logger.info("Loading Slash Localizer...")
-		await super().load()
-		end = perf_counter() - benchmark
-		logger.info(f"Loaded Slash Localizer in {end:.2f}s")

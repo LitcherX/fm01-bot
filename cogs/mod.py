@@ -6,7 +6,7 @@ from typing import Any, Literal, Self
 import asyncpg
 import discord
 from args import FormatDateTime, Guild, Member, TextChannel, User
-from core import Context, Bot
+from core import Bot, Context
 from discord import app_commands
 from discord.ext import commands
 from helpers import convert_to_query, custom_response, seconds_to_text, text_to_seconds
@@ -118,17 +118,17 @@ class Case:
 		Parameters
 		----------
 		db: `asyncpg.Pool`
-		        The database connection pool.
+		        The database connection pool
 		user: Union[`discord.Member`, `discord.User`]
-		        The user to get the cases from.
+		        The user to get the cases from
 		client: `discord.Client`
-		        The client to get the guilds with.
+		        The client to get the guilds with
 		guild: `discord.Guild`
-		        The guild to get the cases from.
+		        The guild to get the cases from
 		limit: `int`
-		        The limit of cases to get. If None, it will get all cases.
+		        The limit of cases to get. If None, it will get all cases
 		get_type: `bool`
-		        Whether to return the type of the case in the result dictionary.
+		        Whether to return the type of the case in the result dictionary
 
 		Returns
 		-------

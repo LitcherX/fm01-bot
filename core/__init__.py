@@ -11,4 +11,4 @@ from core.command import *
 from core.slash_localization import *
 from core.context import *
 from core.bot import *
-from core.hybrid_command import command, HybridCommand
+from core.hybrid import *

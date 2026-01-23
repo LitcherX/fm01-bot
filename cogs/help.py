@@ -1,9 +1,8 @@
 from typing import Any, Literal, Optional, get_args, get_origin
 
 import discord
-from core import Command, Context, Bot
+from core import Bot, Command, Context
 from discord.ext import commands
-from discord.ext.commands._types import BotT
 from discord.ext.localization import Localization
 from helpers import CustomResponse
 
@@ -16,7 +15,7 @@ class HelpCommand(commands.HelpCommand):
 		self.custom_response = None
 		self.name = "help"
 
-	async def prepare_help_command(self, ctx: commands.Context[BotT], command: Optional[str] = None, /) -> None:
+	async def prepare_help_command(self, ctx: Context, command: Optional[str] = None, /) -> None:
 		if self.custom_response is None:
 			self.custom_response = ctx.bot.custom_response
 

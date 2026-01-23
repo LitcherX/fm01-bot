@@ -5,10 +5,6 @@ from typing import Optional
 import discord
 import pypokedex
 import requests
-from emoji.unicode_codes import EMOJI_DATA
-from discord import app_commands
-from discord.ext import commands
-
 from args import (
 	Bot,
 	Category,
@@ -25,7 +21,10 @@ from args import (
 	User,
 	VoiceChannel,
 )
-from core import Context, Bot
+from core import Bot, Context, group
+from discord import app_commands
+from discord.ext import commands
+from emoji.unicode_codes import EMOJI_DATA
 from helpers.regex import DISCORD_TEMPLATE
 
 
@@ -33,9 +32,7 @@ class Info(commands.Cog, name="Information"):
 	def __init__(self, client: Bot):
 		self.client = client
 
-	@commands.hybrid_group(name="info", description="info-desc")
-	@app_commands.rename(argument="info-args-argument-name")
-	@app_commands.describe(argument="info-args-argument-desc")
+	@group()
 	async def info(
 		self,
 		ctx: Context,
@@ -52,9 +49,7 @@ class Info(commands.Cog, name="Information"):
 		else:
 			raise commands.BadArgument
 
-	@info.command(name="user", description="userinfo-desc")
-	@app_commands.rename(user="userinfo-args-user-name")
-	@app_commands.describe(user="userinfo-args-user-desc")
+	@info.command()
 	async def user(self, ctx: Context, user: discord.Member | discord.User | None = None):
 		user = user or ctx.author
 
@@ -72,24 +67,20 @@ class Info(commands.Cog, name="Information"):
 		except discord.NotFound:
 			await ctx.send("info.user.not_member", member=User.from_user(user))
 
-	@info.command(name="server", description="serverinfo-desc")
+	@info.command()
 	@commands.guild_only()
 	async def server(self, ctx: Context):
 		await ctx.send("info.server", server=Guild.from_guild(ctx.guild))
 
-	@info.command(name="role", description="roleinfo-desc")
+	@info.command()
 	@commands.guild_only()
-	@app_commands.rename(role="roleinfo-args-role-name")
-	@app_commands.describe(role="roleinfo-args-role-desc")
 	async def role(self, ctx: Context, role: Optional[discord.Role] = None):
 		role = role or ctx.author.top_role
 		if not role:
 			raise commands.BadArgument("role")
 		await ctx.send("info.role", role=Role.from_role(role))
 
-	@info.command(name="ip", description="ipinfo-desc")
-	@app_commands.rename(ip_addr="ipinfo-args-ip-name")
-	@app_commands.describe(ip_addr="ipinfo-args-ip-desc")
+	@info.command()
 	async def ip(self, ctx: Context, ip_addr: str):
 		try:
 			ip_json = await self.client.request(f"https://ipinfo.io/{ip_addr}/json")
@@ -98,13 +89,11 @@ class Info(commands.Cog, name="Information"):
 		ip = IPAddress(ip_json)
 		await ctx.send("info.ip", ip=ip)
 
-	@info.command(name="bot", description="botinfo-desc")
+	@info.command()
 	async def bot(self, ctx: Context):
 		await ctx.send("info.bot", bot=Bot(self.client))
 
-	@info.command(name="emoji", description="emojiinfo-desc")
-	@app_commands.rename(emoji_name="emojiinfo-args-emoji-name")
-	@app_commands.describe(emoji_name="emojiinfo-args-emoji-desc")
+	@info.command()
 	async def emoji(self, ctx: Context, emoji_name: str):
 		try:
 			emoji = await commands.EmojiConverter().convert(ctx, emoji_name)
@@ -117,10 +106,8 @@ class Info(commands.Cog, name="Information"):
 		else:
 			raise commands.BadArgument("emoji")
 
-	@info.command(name="channel", description="chinfo-desc")
+	@info.command()
 	@commands.guild_only()
-	@app_commands.rename(channel="chinfo-args-channel-name")
-	@app_commands.describe(channel="chinfo-args-channel-desc")
 	async def channel(self, ctx: Context, channel: discord.abc.GuildChannel):
 		if isinstance(channel, discord.TextChannel):
 			await ctx.send("info.channel.text", channel=TextChannel.from_channel(channel))
@@ -148,9 +135,7 @@ class Info(commands.Cog, name="Information"):
 
 		await ctx.send("info.pokemon", pokemon=pokemon)
 
-	@info.command(name="template", description="tmplteinfo-desc")
-	@app_commands.rename(template="tmplteinfo-args-tmpl-name")
-	@app_commands.describe(template="tmplteinfo-args-tmpl-desc")
+	@info.command()
 	async def template(self, ctx: Context, template: str):
 		regex = DISCORD_TEMPLATE.search(template)
 		if regex:

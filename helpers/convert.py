@@ -1,7 +1,6 @@
 """A helper for converting stuff."""
 
 import re
-from typing import Optional
 
 import discord
 
@@ -17,41 +16,41 @@ def text_to_seconds(time: str, base: int = 0) -> int:
 
 	Arguments
 	---------
-	time: `str`
-	        String containing the time(s). Examples are:
+	time
+		String containing the time(s). Examples are:
 
-	        - 3min2s (3 minutes and 2 seconds) = 182 seconds
+		- 3min2s (3 minutes and 2 seconds) = 182 seconds
 
-	        - 5h30m (5 hours and 30 minutes) = 19000
+		- 5h30m (5 hours and 30 minutes) = 19000
 
-	        Supported time units:
+		Supported time units:
 
-	        - years (365d)
+		- years (365d)
 
-	        - months (31d)
+		- months (31d)
 
-	        - weeks
+		- weeks
 
-	        - days
+		- days
 
-	        - hours
+		- hours
 
-	        - minutes
+		- minutes
 
-	        - seconds
-	base: `int`
+		- seconds
+	base
 	    Base seconds to add the result to, or remove the result from, if ``time`` starts with a plus or minus sign
 	    respectively.
 
 	Returns
 	-------
-	`int`
-	        Seconds.
+	int
+	    Seconds.
 
 	Raises
 	------
 	ValueError
-	        If the string doesn't contain time units.
+	    If the string doesn't contain time units.
 	"""
 	pattern = re.compile(
 		r"(\d+)(y|yr|yrs|year|years|mo|mos|month|months|w|wk|wks|week|weeks|d|dy|dys|day|days|h|hr|hrs|hour|hours|m|mn|mns|min|mins|minutes|s|sc|scs|sec|secs|seconds)"
@@ -115,22 +114,22 @@ def text_to_seconds(time: str, base: int = 0) -> int:
 
 def seconds_to_text(seconds: int) -> str:
 	"""
-	Converts seconds into a human-readable format.
+	Transforms seconds into an easily understandable representation.
 
-	Examples
+	Example
 	--------
-	>>> seconds_to_text(300)  # 5m
-	>>> seconds_to_text(86400)  # 1d
+	>>> seconds_to_text(300)  # 5 minutes
+	>>> seconds_to_text(86400)  # 1 day
 
 	Arguments
 	---------
-	seconds: `int`
-	        Seconds to convert.
+	seconds
+		The number of seconds to be converted.
 
 	Returns
 	-------
-	`str`
-	        Human-readable time.
+	str
+		A time format that is easy for humans to read.
 	"""
 	if seconds == 0:
 		return "0s"
@@ -153,24 +152,24 @@ def seconds_to_text(seconds: int) -> str:
 	return time.strip()
 
 
-def convert_to_query(table: str, guild: Optional[discord.Guild] = None, limit: Optional[int] = None, **filters):
+def convert_to_query(table: str, guild: discord.Guild | None = None, limit: int | None = None, **filters):
 	"""Converts a set of filters to an SQL query.
 
 	Parameters
 	----------
-	table: `str`
-	        The table to get the results from.
-	guild: Optional[`discord.Guild`]
-	        The guild to get the results from.
-	limit: Optional[`int`]
-	        The number of results to return. If ``None``, all results will be returned.
+	table
+		The table to get the results from.
+	guild
+		The guild to get the results from.
+	limit
+		The number of results to return. If ``None``, all results will be returned.
 	**filters
-	        The conditions to filter the results by.
+		The conditions to filter the results by.
 
 	Returns
 	-------
 	(`str`, list[Any])
-	        The query string and the query parameters.
+	    The query string and the query parameters.
 	"""
 	processed_filters = {}
 	for key, value in filters.items():
@@ -179,7 +178,7 @@ def convert_to_query(table: str, guild: Optional[discord.Guild] = None, limit: O
 		else:
 			processed_filters[key] = value
 
-	if guild:
+	if guild is not None:
 		processed_filters["guild_id"] = guild.id
 
 	# Construct WHERE clause from processed filters

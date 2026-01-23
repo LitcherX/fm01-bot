@@ -6,7 +6,7 @@ from typing import Optional
 
 import discord
 import helpers
-from core import Bot, Context
+from core import Bot, Context, command
 from discord import app_commands
 from discord.ext import commands
 from helpers import FormatDateTime
@@ -22,25 +22,19 @@ class Giveaway(commands.Cog, name="Giveaway"):
 		self.GIVEAWAY_EMOJI = "🎉"
 
 	async def load_active_giveaways(self):
-		giveaways = await self.client.db.fetch("SELECT * FROM giveaways WHERE ended = FALSE")
+		giveaways = await self.client.db.fetch("SELECT * FROM giveaway WHERE ended = FALSE")
 
 		for giveaway in giveaways:
 			end_time = giveaway["ends_at"]
-
-			# Load all giveaways regardless of whether they're expired
 			self.active_giveaways[giveaway["message_id"]] = {
 				"end_time": end_time,
 				"winners": giveaway["winners"],
 				"channel_id": giveaway["channel_id"],
 			}
 
-			# If expired, end immediately, otherwise schedule for later
-			if datetime.now() >= end_time:
-				self.client.loop.create_task(
-					self.end_giveaway(None, giveaway["message_id"], giveaway["channel_id"], True)
-				)
-			else:
-				self.client.loop.create_task(self.end_giveaway(None, giveaway["message_id"], giveaway["channel_id"]))
+			self.client.loop.create_task(
+				self.end_giveaway(None, giveaway["message_id"], giveaway["channel_id"], datetime.now() >= end_time)
+			)
 
 	async def cog_load(self):
 		await self.load_active_giveaways()
@@ -60,7 +54,6 @@ class Giveaway(commands.Cog, name="Giveaway"):
 		try:
 			message = await channel.fetch_message(message_id)
 
-			# Get reaction users
 			reaction: Optional[discord.Reaction] = discord.utils.get(message.reactions, emoji=self.GIVEAWAY_EMOJI)
 			if not reaction:
 				participants = []
@@ -84,23 +77,21 @@ class Giveaway(commands.Cog, name="Giveaway"):
 				await message.reply(**response)
 
 			await self.client.db.execute(
-				"UPDATE giveaways SET ended = TRUE, won_by = $1 WHERE message_id = $2", winner_ids, message_id
+				"UPDATE giveaway SET ended = TRUE, won_by = $1 WHERE message_id = $2", winner_ids, message_id
 			)
 			del self.active_giveaways[message_id]
 
 			await self.client.db.execute(
-				"UPDATE giveaways SET ended = TRUE, won_by = $1 WHERE message_id = $2", winner_ids, message_id
+				"UPDATE giveaway SET ended = TRUE, won_by = $1 WHERE message_id = $2", winner_ids, message_id
 			)
 
 		except discord.NotFound:
-			await self.client.db.execute("DELETE FROM giveaways WHERE message_id = $1", message_id)
+			await self.client.db.execute("DELETE FROM giveaway WHERE message_id = $1", message_id)
 		except Exception as e:
 			logger.error(f"Error ending giveaway: {e}")
 			raise e
 
-	@commands.hybrid_group(name="giveaway", description="gw-desc", usage="gw-usage", fallback="gw-fallback")
-	@app_commands.rename(winners="gw-args-winners-name", duration="gw-args-duration-name", prize="gw-args-prize-name")
-	@app_commands.describe(winners="gw-args-winners-desc", duration="gw-args-duration-desc", prize="gw-args-prize-desc")
+	@command()
 	async def giveaway(self, ctx: Context, duration: str, winners: str | None = None, *, prize: str | None = None):
 		try:
 			end_time = datetime.now() + timedelta(seconds=helpers.text_to_seconds(duration))
@@ -126,7 +117,7 @@ class Giveaway(commands.Cog, name="Giveaway"):
 		await message.add_reaction(self.GIVEAWAY_EMOJI)
 
 		await self.client.db.execute(
-			"INSERT INTO giveaways"
+			"INSERT INTO giveaway"
 			" (guild_id, channel_id, message_id, author_id, prize, winners, ends_at, ended, won_by)"
 			" VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE, NULL)",
 			ctx.guild.id,
@@ -146,9 +137,7 @@ class Giveaway(commands.Cog, name="Giveaway"):
 
 		self.client.loop.create_task(self.end_giveaway(ctx, message.id, ctx.channel.id))
 
-	@giveaway.command(name="end", description="gw_end-desc", usage="gw_end-usage", aliases=["reroll"])
-	@app_commands.rename(message="gw_end-args-message_id-name")
-	@app_commands.describe(message="gw_end-args-message_id-desc")
+	@command()
 	@commands.has_permissions(manage_guild=True)
 	async def endgiveaway(self, ctx, message: str):
 		try:

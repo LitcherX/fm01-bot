@@ -24,46 +24,44 @@ logger = logging.getLogger(__name__)
 
 
 class CustomResponse:
-	"""A class to handle custom responses with localization."""
-
 	def __init__(self, client: "Bot", name: Optional[str] = None) -> None:
-		"""A custom message instance.
+		"""A class to handle custom responses with localization.
 
 		Parameters
 		----------
-		client: `Bot`
-			The client object with a `db` attribute.
-		name: `str`
+		client
+			The client object with a ``db`` attribute.
+		name
 			The name of the cog that uses this class.
 		"""
 		self.client = client
 		self.name = name
 		self.localizations: dict[str, dict] = {}
-		self._localizer: localization.Localization = None
+		self._localizer: localization.Localization | None = None
 		self._last_debug_reload: float = 0
 
 		self.load_localizations()
 
 	@staticmethod
 	def convert_embeds(data: Any) -> Any:
-		"""Converts `data`'s embed (dict) or embeds (list) keys' values into a discord.Embed.
+		"""Converts ``data``'s embed (dict) or embeds (list) keys' values into a ``discord.Embed``.
 
-		This converts in a smart way: if there are both an `embed` and `embeds` key, `embed` will be merged into `embeds`.
+		This converts in a smart way: if there are both an ``embed`` and ``embeds`` key, ``embed`` will be merged into ``embeds``.
 
 		Parameters
 		----------
-		data: `Any`
-		        The data that might contain an `embed` or an `embeds` key. Conversion is only performed if this is a `dict`.
-
-		Raises
-		------
-		ValueError
-		        If there are more than 10 embeds.
+		data
+			The data that might contain an ``embed`` or an ``embeds`` key. Conversion is only performed if this is a ``dict``.
 
 		Returns
 		-------
 		Any
-		        The original data, but with usable `discord.Embed`s.
+			The original data, but with usable ``discord.Embed``s.
+
+		Raises
+		------
+		ValueError
+			If there are more than 10 embeds.
 		"""
 		if isinstance(data, dict) and (data.get("embed") or data.get("embeds")):
 			if len(data.get("embeds", [])) > 10:
@@ -127,17 +125,17 @@ class CustomResponse:
 		locale: Union[str, discord.Locale, discord.Guild, discord.Interaction, commands.Context, Context],
 		*,
 		convert_embeds: bool = True,
-		**kwargs: Any,
+		**kwargs,
 	) -> Union[dict, str, list, int, float, bool]:
 		"""Returns a custom message from the database, or if not found, returns the default message.
 
 		Parameters
 		----------
-		name: str
+		name
 			The name of the message.
-		locale: Union[str, discord.Locale, discord.Guild, discord.Interaction, commands.Context, Context]
+		locale
 			The locale to use or the context to derive it.
-		convert_embeds: bool
+		convert_embeds
 		    Whether to convert the embeds in the message to discord.Embeds.
 
 		Returns

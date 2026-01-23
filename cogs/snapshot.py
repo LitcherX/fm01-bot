@@ -7,7 +7,7 @@ from uuid import UUID
 
 import asyncpg
 import discord
-from core import Context, Bot
+from core import Bot, Context, group
 from discord import app_commands
 from discord.ext import commands
 
@@ -312,7 +312,7 @@ class Snapshot(commands.Cog, name="Snapshots"):
 				except (discord.Forbidden, discord.HTTPException):
 					continue
 
-	@commands.hybrid_group(name="snapshot", description="snapshot-desc", fallback="snapshot-fallback")
+	@group()
 	@app_commands.checks.has_permissions(administrator=True)
 	@commands.has_permissions(administrator=True)
 	async def snapshot(self, ctx: Context):
@@ -320,15 +320,14 @@ class Snapshot(commands.Cog, name="Snapshots"):
 
 		await ctx.send("snapshot.create", code=code)
 
-	@snapshot.command(name="load", description="ss_load-desc")
-	@app_commands.describe(code="ss_load-args-code-desc")
-	@app_commands.rename(code="ss_load-args-code-name")
+	@snapshot.command(l10n_key="ss_load")
 	@app_commands.checks.has_permissions(administrator=True)
 	@commands.has_permissions(administrator=True)
 	async def load(self, ctx: Context, code: str):
 		payload = await self.get_snapshot(code)
 		if not payload:
-			return await ctx.send("snapshot.not_found")
+			await ctx.send("snapshot.not_found")
+			return
 
 		old = await self.create_snapshot(ctx)
 

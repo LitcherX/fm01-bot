@@ -78,8 +78,8 @@ class Bot(commands.AutoShardedBot):
 		if not row:
 			await self.db.execute("INSERT INTO guilds (guild_id) VALUES ($1)", guild.id)
 
-	async def get_context(self, origin: Union[discord.Message, discord.Interaction], /, *, cls=Context) -> Any:
-		return await super().get_context(origin, cls=cls)
+	async def get_context(self, origin: Union[discord.Message, discord.Interaction], /, *, cls=None) -> Any:
+		return await super().get_context(origin, cls=Context)
 
 	async def setup_hook(self):
 		self.logger.info("Running initial setup hook...")
@@ -204,7 +204,7 @@ class Bot(commands.AutoShardedBot):
 				if slash_command_localization:
 					name = slash_command_localization(error.param.name, ctx)
 				else:
-					name = ctx.command.name
+					name = "-"
 				parameter = f"[{name if error.param.required else f'({name})'}]"
 
 				await ctx.send("errors.missing_required_argument", command=command, parameter=parameter)
@@ -244,13 +244,15 @@ class Bot(commands.AutoShardedBot):
 				await ctx.send("errors.not_owner", command=command)
 			case commands.CommandNotFound() | app_commands.CommandNotFound():
 				return
+			case app_commands.CommandSignatureMismatch():
+				await ctx.send(content=f"The signature for {command.name} is mismatched.\n```{error.command}```")
 			case _:
 				# if the error is unknown, log it
 				channel = (
 					ctx.channel if self.debug and ctx and ctx.channel else await self.fetch_channel(1268260404677574697)
 				)
 
-				if channel:
+				if channel and isinstance(channel, discord.TextChannel):
 					# show original error for chained exceptions
 					root_exc = None
 					if getattr(error, "__cause__"):
@@ -276,21 +278,25 @@ class Bot(commands.AutoShardedBot):
 						s = StringIO()
 						s.write(stack)
 						s.seek(0)
-						file = discord.File(s, filename="error.txt")
+						file = discord.File(s, filename="error.txt")  # type: ignore # stringIO is supported
 						stack = "The stack trace was too long to send in a message, so it was saved as a file."
-					webhook = discord.utils.get(await channel.webhooks(), name=f"{self.user.display_name} Errors")
-					if not webhook:
-						webhook = await channel.create_webhook(
-							name=f"{self.user.display_name} Errors", avatar=await ctx.me.avatar.read()
+
+					webhook = None
+					if self.user:
+						webhook = discord.utils.get(await channel.webhooks(), name=f"{self.user.display_name} Errors")
+						if not webhook:
+							webhook = await channel.create_webhook(
+								name=f"{self.user.display_name} Errors", avatar=await ctx.me.avatar.read()
+							)
+					if webhook:
+						await webhook.send(
+							content=f"**ID:** {ctx.message.id}\n"
+							f"**Guild:** {ctx.guild.name if ctx.guild else 'DMs'} / {ctx.guild.id if ctx.guild else 0}\n"
+							f"**User:** {ctx.author} / {ctx.author.id}\n"
+							f"**Command:** {ctx.command}\n"
+							f"```{stack}```",
+							file=file if too_long and file else discord.abc.MISSING,
 						)
-					await webhook.send(
-						content=f"**ID:** {ctx.message.id}\n"
-						f"**Guild:** {ctx.guild.name if ctx.guild else 'DMs'} / {ctx.guild.id if ctx.guild else 0}\n"
-						f"**User:** {ctx.author} / {ctx.author.id}\n"
-						f"**Command:** {ctx.command}\n"
-						f"```{stack}```",
-						file=file if too_long and file else discord.abc.MISSING,
-					)
 					await ctx.reply(
 						content=f"An error has occured and has been reported to the developers. Report ID: `{ctx.message.id}`",
 						mention_author=False,

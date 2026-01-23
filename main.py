@@ -3,7 +3,7 @@ import asyncio
 import os
 
 from core.bot import Bot
-from core.logger import logger
+from core.log import logger
 from dotenv import load_dotenv
 
 try:
@@ -19,7 +19,7 @@ except ImportError:
 parser = argparse.ArgumentParser(prog="fm01")
 parser.add_argument("--debug", action="store_true")
 
-client = None
+client: Bot = None  # type: ignore
 
 
 async def main(debug) -> None:
@@ -37,13 +37,18 @@ async def main(debug) -> None:
 		token = os.getenv("TOKEN")
 		logger.info("Running in production mode")
 
-	await client.start(token)
+	if token:
+		await client.start(token)
+	else:
+		raise ValueError("no token provided")
 
 
 if __name__ == "__main__":
 	args = parser.parse_args()
 	try:
 		asyncio.run(main(args.debug))
-	except KeyboardInterrupt:
+	except Exception as e:
 		if client.db:
 			asyncio.run(client.db.close())
+		asyncio.run(client.close())
+		logger.error(e)

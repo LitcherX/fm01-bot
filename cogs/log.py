@@ -13,7 +13,7 @@ from args import (
 	User,
 	convert_to_custom_channel,
 )
-from core import Context, Bot
+from core import Bot, Context, group
 from discord import app_commands
 from discord.ext import commands
 from helpers import CustomResponse
@@ -23,10 +23,8 @@ class LogCommands(commands.Cog, name="Logging"):
 	def __init__(self, client: Bot) -> None:
 		self.client = client
 
-	@commands.hybrid_group(name="log", fallback="log-fallback", description="log-desc", usage="log-usage")
+	@group(l10n_key="log")
 	@commands.has_permissions(manage_guild=True)
-	@app_commands.rename(state="log-args-state-name", channel="log-args-channel-name")
-	@app_commands.describe(state="log-args-state-desc", channel="log-args-channel-desc")
 	async def log_toggle(
 		self, ctx: Context, state: Literal["on", "off"] = "on", channel: discord.TextChannel | None = None
 	):
@@ -53,9 +51,7 @@ class LogCommands(commands.Cog, name="Logging"):
 		)
 		await ctx.send(content="log.toggle.on", channel=TextChannel.from_channel(channel))
 
-	@log_toggle.command(name="add", description="logadd-desc", usage="logadd-usage")
-	@app_commands.rename(module="logadd-args-module-name")
-	@app_commands.describe(module="logadd-args-module-desc")
+	@log_toggle.command()
 	@commands.has_permissions(manage_guild=True)
 	async def log_module_add(self, ctx: Context, module: str):
 		if module == "all":
@@ -67,9 +63,7 @@ class LogCommands(commands.Cog, name="Logging"):
 
 		await ctx.send("log.module.add", module=module)
 
-	@log_toggle.command(name="remove", description="logremove-desc", usage="logremove-usage")
-	@app_commands.rename(module="logremove-args-module-name")
-	@app_commands.describe(module="logremove-args-module-desc")
+	@log_toggle.command()
 	@commands.has_permissions(manage_guild=True)
 	async def log_module_remove(self, ctx: Context, module: str):
 		if module == "all":
