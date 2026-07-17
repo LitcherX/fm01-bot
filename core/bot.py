@@ -37,6 +37,7 @@ class MyClient(commands.AutoShardedBot):
 			657350415511322647,  # liba
 			452133888047972352,  # aki26
 			1051181672508444683,  # sarky
+			329250127703441410, # adam
 		}
 		super().__init__(
 			command_prefix=self.get_prefix,
